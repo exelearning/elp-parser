@@ -54,6 +54,11 @@ try {
     // Get the file version
     $version = $parser->getVersion(); // Returns 2 or 3
     
+    // Get metadata fields
+    $title = $parser->getTitle();
+    $description = $parser->getDescription();
+    $author = $parser->getAuthor();
+
     // Get all extracted strings
     $strings = $parser->getStrings();
     
