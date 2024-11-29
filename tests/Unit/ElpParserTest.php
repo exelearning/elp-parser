@@ -17,7 +17,7 @@ use Exelearning\ELPParser;
 
 it(
     'can parse a version 2 ELP file', function () {
-        $elpFile = __DIR__ . '/fixtures/exe2-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
+        $elpFile = __DIR__ . '/../Fixtures/exe2-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 2 not found');
@@ -39,7 +39,7 @@ it(
 
 it(
     'can parse a version 3 ELP file', function () {
-        $elpFile = __DIR__ . '/fixtures/exe3-ipe1_parada2.elp';
+        $elpFile = __DIR__ . '/../Fixtures/exe3-ipe1_parada2.elp';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
@@ -61,8 +61,8 @@ it(
 
 it(
     'can extract an ELP file', function () {
-        $elpFile = __DIR__ . '/fixtures/exe2-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
-        $extractPath = __DIR__ . '/fixtures/extracted_v2';
+        $elpFile = __DIR__ . '/../Fixtures/exe2-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
+        $extractPath = __DIR__ . '/../Fixtures/extracted_v2';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for extraction not found');
@@ -87,7 +87,7 @@ it(
 
 it(
     'throws an exception for invalid ELP file', function () {
-        $invalidFile = __DIR__ . '/fixtures/invalid.png';
+        $invalidFile = __DIR__ . '/../Fixtures/invalid.png';
     
         // Create an invalid file for testing
         file_put_contents($invalidFile, 'This is not a valid ELP file');
