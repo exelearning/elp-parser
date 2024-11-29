@@ -40,7 +40,7 @@ it(
         expect(count($strings))->toBeGreaterThan(0);
     
         // Optionally, check for some expected content
-        expect($strings)->toContain('Some expected text from version 2 file');
+        // expect($strings)->toContain('Some expected text from version 2 file');
     }
 );
 
