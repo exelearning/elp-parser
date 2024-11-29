@@ -14,6 +14,7 @@ namespace Exelearning\ElpParser\Tests\Unit;
 require_once __DIR__ . '/../../src/ElpParser.php';
 
 use Exelearning\ELPParser;
+use Exception;
 
 it(
     'can parse a version 2 ELP file', function () {
@@ -99,17 +100,22 @@ it(
 
 it(
     'throws an exception for invalid ELP file', function () {
-        $invalidFile1 = __DIR__ . '/../Fixtures/invalid.png';
+
+        // Test with inexistent file
+        $invalidFile0 = __DIR__ . '/../Fixtures/nonexisting.zip';    
+        expect(fn() => ELPParser::fromFile($invalidFile0))
+            ->toThrow(Exception::class, 'File does not exist.');
+
+        // Test with ZIP but no XML
+        $invalidFile1 = __DIR__ . '/../Fixtures/invalid.zip';    
+        expect(fn() => ELPParser::fromFile($invalidFile1))
+            ->toThrow(Exception::class, 'Invalid ELP file: No content XML found.');
     
         // Test with invalid file
-        expect(fn() => ELPParser::fromFile($invalidFile1))
-            ->toThrow(Exception::class, 'Unable to open ELP file');
-    
-        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.zip';    
-        // Test with ZIP but no XML
+        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.png';
         expect(fn() => ELPParser::fromFile($invalidFile2))
-            ->toThrow(Exception::class, 'Invalid ELP file: No content XML found');
-    
+            ->toThrow(Exception::class, 'Unable to open the ZIP file.');
+
     }
 );
 

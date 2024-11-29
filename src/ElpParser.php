@@ -132,11 +132,20 @@ class ELPParser implements \JsonSerializable
         $zip = new ZipArchive();
         
         if (!file_exists($this->filePath)) {
-            throw new Exception('Unable to open ELP file');
+            throw new Exception('File does not exist.');
         }
 
+        // Check MIME type
+        $mimeType = mime_content_type($this->filePath);
+        print_r($mimeType);
+        die();
+        if ($mimeType !== 'application/zip') {
+            throw new Exception('The file is not a valid ZIP file.');
+        }
+
+        $zip = new ZipArchive();
         if ($zip->open($this->filePath) !== true) {
-            throw new Exception('Unable to open ELP file');
+            throw new Exception('Unable to open the ZIP file.');
         }
 
         // Detect version
@@ -148,7 +157,7 @@ class ELPParser implements \JsonSerializable
             $contentFile = 'contentv3.xml';
         } else {
             $zip->close();
-            throw new Exception("Invalid ELP file: No content XML found");
+            throw new Exception("Invalid ELP file: No content XML found.");
         }
 
         // Extract content
@@ -161,6 +170,7 @@ class ELPParser implements \JsonSerializable
 
         $this->parseXML($xmlContent);
     }
+
 
     /**
      * Parse the XML content and extract relevant information
