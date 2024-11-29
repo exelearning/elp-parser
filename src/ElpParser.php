@@ -88,6 +88,13 @@ class ELPParser implements \JsonSerializable
     protected string $license = '';
 
     /**
+     * Language of the ELP content
+     * 
+     * @var string
+     */
+    protected string $language = '';
+
+    /**
      * Learning resource type
      * 
      * @var string
@@ -295,6 +302,9 @@ class ELPParser implements \JsonSerializable
                 case 'license':
                     $this->license = $value;
                     break;
+                case 'lom_general_language':
+                    $this->language = $value;
+                    break;
                 case 'pp_learningResourceType':
                     $this->learningResourceType = $value;
                     break;
@@ -341,6 +351,16 @@ class ELPParser implements \JsonSerializable
     public function getLicense(): string
     {
         return $this->license;
+    }
+
+    /**
+     * Get the language
+     *
+     * @return string
+     */
+    public function getLanguage(): string
+    {
+        return $this->language;
     }
 
     /**
@@ -422,7 +442,8 @@ class ELPParser implements \JsonSerializable
         $this->title = $metadata['_title'] ?? '';
         $this->description = $metadata['_description'] ?? '';
         $this->author = $metadata['_author'] ?? '';
-        $this->license = $metadata['_license'] ?? '';
+        $this->license = $metadata['license'] ?? '';
+        $this->language = $metadata['_lang'] ?? '';
         $this->learningResourceType = $metadata['_learningResourceType'] ?? '';
 
     }
@@ -441,6 +462,7 @@ class ELPParser implements \JsonSerializable
             'description' => $this->description,
             'author' => $this->author,
             'license' => $this->license,
+            'language' => $this->language,
             'learningResourceType' => $this->learningResourceType,
             'strings' => $this->strings,
         ];

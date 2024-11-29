@@ -58,6 +58,8 @@ try {
     $title = $parser->getTitle();
     $description = $parser->getDescription();
     $author = $parser->getAuthor();
+    $license = $parser->getLicense();
+    $language = $parser->getLanguage();
 
     // Get all extracted strings
     $strings = $parser->getStrings();

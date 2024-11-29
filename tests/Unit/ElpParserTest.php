@@ -34,6 +34,7 @@ it(
         expect($parser->getAuthor())->toBe('María Cruz García Sanchís y Daniela Gimeno Ruiz para Cedec');
         expect($parser->getLicense())->toBe('propietary license');
         expect($parser->getLearningResourceType())->toBe('real project');
+        expect($parser->getLanguage())->toBe('es');
 
         // Check extracted strings
         $strings = $parser->getStrings();
@@ -61,6 +62,10 @@ it(
         expect($parser->getTitle())->toBe('Parada 2: Riesgos de la ruta | Itinerario para la empleabilidad I');
         expect($parser->getDescription())->toContain('En este REA');
         expect($parser->getAuthor())->toBe('María Cruz García Sanchís y Daniela Gimeno Ruiz para Cedec');
+        expect($parser->getLicense())->toBe('creative commons: attribution - share alike 4.0');
+        expect($parser->getLearningResourceType())->toBe('real project');
+        expect($parser->getLanguage())->toBe('es');
+
 
         // Check extracted strings
         $strings = $parser->getStrings();
