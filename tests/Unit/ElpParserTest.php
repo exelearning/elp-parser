@@ -107,8 +107,8 @@ it(
     
         $invalidFile2 = __DIR__ . '/../Fixtures/invalid.zip';    
         // Test with ZIP but no XML
-        expect(fn() => ELPParser::fromFile($invalidFile))
-            ->toThrow(Exception::class, 'No content XML found');
+        expect(fn() => ELPParser::fromFile($invalidFile2))
+            ->toThrow(Exception::class, 'Invalid ELP file: No content XML found');
     
     }
 );
