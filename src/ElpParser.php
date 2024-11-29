@@ -22,34 +22,50 @@ use Exception;
  *
  * This class provides functionality to parse .elp files, which are ZIP archives
  * containing XML content for eXeLearning projects. It supports both version 2 and 3 formats.
+ *
+ * @category Parser
+ * @package  Exelearning
+ * @author   INTEF <cedec@educacion.gob.es>
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/exelearning/elp-parser
  */
 class ELPParser implements \JsonSerializable
 {
     /**
-     * @var string Path to the .elp file 
+     * Path to the .elp file
+     * 
+     * @var string
      */
     protected string $filePath;
 
     /**
-     * @var int ELP file version (2 or 3) 
+     * ELP file version (2 or 3)
+     * 
+     * @var int
      */
     protected int $version;
 
     /**
-     * @var array Extracted content and metadata 
+     * Extracted content and metadata
+     * 
+     * @var array
      */
     protected array $content = [];
 
     /**
-     * @var array Raw extracted strings 
+     * Raw extracted strings
+     * 
+     * @var array
      */
     protected array $strings = [];
 
     /**
      * Create a new ELPParser instance
      *
-     * @param  string $filePath Path to the .elp file
+     * @param string $filePath Path to the .elp file
+     * 
      * @throws Exception If file cannot be opened or is invalid
+     * @return void
      */
     public function __construct(string $filePath)
     {
@@ -60,9 +76,10 @@ class ELPParser implements \JsonSerializable
     /**
      * Static method to create an ELPParser from a file path
      *
-     * @param  string $filePath Path to the .elp file
+     * @param string $filePath Path to the .elp file
+     * 
+     * @throws Exception If file cannot be opened or is invalid
      * @return self
-     * @throws Exception
      */
     public static function fromFile(string $filePath): self
     {
@@ -73,6 +90,7 @@ class ELPParser implements \JsonSerializable
      * Detect the ELP file version and parse its contents
      *
      * @throws Exception If file parsing fails
+     * @return void
      */
     protected function parse(): void
     {
@@ -108,8 +126,10 @@ class ELPParser implements \JsonSerializable
     /**
      * Parse the XML content and extract relevant information
      *
-     * @param  string $xmlContent XML content as a string
+     * @param string $xmlContent XML content as a string
+     * 
      * @throws Exception If XML parsing fails
+     * @return void
      */
     protected function parseXML(string $xmlContent): void
     {
@@ -130,6 +150,8 @@ class ELPParser implements \JsonSerializable
      * Extract strings from the XML document
      *
      * @param SimpleXMLElement $xml XML document
+     * 
+     * @return void
      */
     protected function extractStrings(SimpleXMLElement $xml): void
     {
@@ -140,7 +162,8 @@ class ELPParser implements \JsonSerializable
     /**
      * Recursively extract all text strings from XML
      *
-     * @param  SimpleXMLElement $element XML element to extract from
+     * @param SimpleXMLElement $element XML element to extract from
+     * 
      * @return array Extracted strings
      */
     protected function recursiveStringExtraction(SimpleXMLElement $element): array
@@ -213,8 +236,10 @@ class ELPParser implements \JsonSerializable
     /**
      * Extract contents of an ELP file to a specified directory
      *
-     * @param  string $destinationPath Directory to extract contents to
+     * @param string $destinationPath Directory to extract contents to
+     * 
      * @throws Exception If extraction fails
+     * @return void
      */
     public function extract(string $destinationPath): void
     {
