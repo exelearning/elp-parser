@@ -269,21 +269,21 @@ class ELPParser implements \JsonSerializable
                 $value = (string)$property->value;
 
                 switch ($key) {
-                    case 'pp_title':
-                        $this->title = $value;
-                        break;
-                    case 'pp_description':
-                        $this->description = $value;
-                        break;
-                    case 'pp_author':
-                        $this->author = $value;
-                        break;
-                    case 'license':
-                        $this->license = $value;
-                        break;
-                    case 'pp_learningResourceType':
-                        $this->learningResourceType = $value;
-                        break;
+                case 'pp_title':
+                    $this->title = $value;
+                    break;
+                case 'pp_description':
+                    $this->description = $value;
+                    break;
+                case 'pp_author':
+                    $this->author = $value;
+                    break;
+                case 'license':
+                    $this->license = $value;
+                    break;
+                case 'pp_learningResourceType':
+                    $this->learningResourceType = $value;
+                    break;
                 }
             }
         }
@@ -339,6 +339,11 @@ class ELPParser implements \JsonSerializable
         return $this->learningResourceType;
     }
 
+    /**
+     * Serialization method
+     *
+     * @return array Data
+     */
     public function toArray(): array
     {
         return [
