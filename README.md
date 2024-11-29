@@ -1,3 +1,7 @@
+Aquí tienes el texto actualizado según tus indicaciones:
+
+---
+
 # eXeLearning .elp Parser for PHP
 
 Simple, fast, and extension-free parser for eXeLearning project files
@@ -23,12 +27,14 @@ Simple, fast, and extension-free parser for eXeLearning project files
 - Detect file version
 - Extract entire .elp file contents
 - No external extensions required
-- Lightweight and easy to use
-- Compatible with PHP 8.1+
+- Lightweight and easy to use (less than 4 KB footprint library)
+- Compatible with PHP 8.0 to PHP 8.5
+
+For more information, visit the [documentation](https://exelearning.github.io/elp-parser/).
 
 ## Requirements
 
-- PHP 8.1+
+- PHP 8.0+
 - Composer
 - zip extension
 
