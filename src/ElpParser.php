@@ -60,6 +60,41 @@ class ELPParser implements \JsonSerializable
     protected array $strings = [];
 
     /**
+     * Title of the ELP content
+     * 
+     * @var string
+     */
+    protected string $title = '';
+
+    /**
+     * Description of the ELP content
+     * 
+     * @var string
+     */
+    protected string $description = '';
+
+    /**
+     * Author of the ELP content
+     * 
+     * @var string
+     */
+    protected string $author = '';
+
+    /**
+     * License of the ELP content
+     * 
+     * @var string
+     */
+    protected string $license = '';
+
+    /**
+     * Learning resource type
+     * 
+     * @var string
+     */
+    protected string $learningResourceType = '';
+
+    /**
      * Create a new ELPParser instance
      *
      * @param string $filePath Path to the .elp file
@@ -142,7 +177,11 @@ class ELPParser implements \JsonSerializable
             throw new Exception("XML Parsing error: " . $errors[0]->message);
         }
 
-        // Extract generic metadata and strings
+        if ($this->version === 2) {
+            $this->extractVersion2Metadata($xml);
+        }
+        
+        // Extract all strings
         $this->extractStrings($xml);
     }
 
@@ -215,10 +254,100 @@ class ELPParser implements \JsonSerializable
      *
      * @return array Parsed ELP file data
      */
+    /**
+     * Extract metadata from version 2 XML format
+     *
+     * @param SimpleXMLElement $xml XML document
+     * 
+     * @return void
+     */
+    protected function extractVersion2Metadata(SimpleXMLElement $xml): void
+    {
+        if (isset($xml->odeProperties)) {
+            foreach ($xml->odeProperties->odeProperty as $property) {
+                $key = (string)$property->key;
+                $value = (string)$property->value;
+
+                switch ($key) {
+                    case 'pp_title':
+                        $this->title = $value;
+                        break;
+                    case 'pp_description':
+                        $this->description = $value;
+                        break;
+                    case 'pp_author':
+                        $this->author = $value;
+                        break;
+                    case 'license':
+                        $this->license = $value;
+                        break;
+                    case 'pp_learningResourceType':
+                        $this->learningResourceType = $value;
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the title
+     *
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    /**
+     * Get the description
+     *
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * Get the author
+     *
+     * @return string
+     */
+    public function getAuthor(): string
+    {
+        return $this->author;
+    }
+
+    /**
+     * Get the license
+     *
+     * @return string
+     */
+    public function getLicense(): string
+    {
+        return $this->license;
+    }
+
+    /**
+     * Get the learning resource type
+     *
+     * @return string
+     */
+    public function getLearningResourceType(): string
+    {
+        return $this->learningResourceType;
+    }
+
     public function toArray(): array
     {
         return [
             'version' => $this->version,
+            'title' => $this->title,
+            'description' => $this->description,
+            'author' => $this->author,
+            'license' => $this->license,
+            'learningResourceType' => $this->learningResourceType,
             'strings' => $this->strings,
         ];
     }

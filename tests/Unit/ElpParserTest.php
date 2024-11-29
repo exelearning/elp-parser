@@ -26,7 +26,14 @@ it(
     
         // Check version detection
         expect($parser->getVersion())->toBe(2);
-    
+
+        // Check metadata fields
+        expect($parser->getTitle())->toBe('Parada 2: Riesgos de la ruta | Itinerario para la empleabilidad I');
+        expect($parser->getDescription())->toContain('En este REA');
+        expect($parser->getAuthor())->toBe('María Cruz García Sanchís y Daniela Gimeno Ruiz para Cedec');
+        expect($parser->getLicense())->toBe('propietary license');
+        expect($parser->getLearningResourceType())->toBe('real project');
+
         // Check extracted strings
         $strings = $parser->getStrings();
         expect($strings)->toBeArray();
