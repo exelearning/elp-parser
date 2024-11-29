@@ -28,7 +28,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Create package
-        run: composer archive --format=zip --file="mime-mail-parser-${{ steps.tag.outputs.tag }}"
+        run: composer archive --format=zip --file="elp-parser-${{ steps.tag.outputs.tag }}"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
