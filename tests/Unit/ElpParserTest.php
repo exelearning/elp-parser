@@ -99,24 +99,16 @@ it(
 
 it(
     'throws an exception for invalid ELP file', function () {
-        $invalidFile = __DIR__ . '/../Fixtures/invalid.zip';
+        $invalidFile = __DIR__ . '/../Fixtures/invalid.png';
     
-        // Create a valid ZIP file but without XML content
-        $zip = new ZipArchive();
-        $zip->open($invalidFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        $zip->addFromString('dummy.txt', 'This is not an XML file');
-        $zip->close();
-    
-        // Test with invalid ZIP
-        expect(fn() => ELPParser::fromFile($invalidFile . '.invalid'))
+        // Test with invalid file
+        expect(fn() => ELPParser::fromFile($invalidFile))
             ->toThrow(Exception::class, 'Unable to open ELP file');
     
         // Test with ZIP but no XML
         expect(fn() => ELPParser::fromFile($invalidFile))
             ->toThrow(Exception::class, 'No content XML found');
     
-        // Clean up test files
-        unlink($invalidFile);
     }
 );
 
