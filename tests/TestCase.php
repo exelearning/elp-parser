@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Base TestCase class for ElpParser tests
  *
@@ -17,6 +16,12 @@ use Exelearning\ElpParser;
 
 /**
  * Abstract base test case class
+ *
+ * @category Tests
+ * @package  ELPParser
+ * @author   INTEF <cedec@educacion.gob.es>
+ * @license  MIT https://opensource.org/licenses/MIT
+ * @link     https://github.com/exelearning/elp-parser
  */
 abstract class TestCase extends BaseTestCase
 {
