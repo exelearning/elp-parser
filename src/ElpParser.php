@@ -4,8 +4,8 @@
  *
  * PHP Version 8.1
  *
- * @category Library
- * @package  ELPParser
+ * @category Parser
+ * @package  Exelearning
  * @author   INTEF <cedec@educacion.gob.es>
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://github.com/exelearning/elp-parser
