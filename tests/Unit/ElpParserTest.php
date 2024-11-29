@@ -99,12 +99,13 @@ it(
 
 it(
     'throws an exception for invalid ELP file', function () {
-        $invalidFile = __DIR__ . '/../Fixtures/invalid.png';
+        $invalidFile1 = __DIR__ . '/../Fixtures/invalid.png';
     
         // Test with invalid file
-        expect(fn() => ELPParser::fromFile($invalidFile))
+        expect(fn() => ELPParser::fromFile($invalidFile1))
             ->toThrow(Exception::class, 'Unable to open ELP file');
     
+        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.zip';    
         // Test with ZIP but no XML
         expect(fn() => ELPParser::fromFile($invalidFile))
             ->toThrow(Exception::class, 'No content XML found');
