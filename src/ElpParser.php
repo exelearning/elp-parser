@@ -179,8 +179,10 @@ class ELPParser implements \JsonSerializable
 
         if ($this->version === 2) {
             $this->extractVersion2Metadata($xml);
+        } else if ($this->version === 3) {
+            $this->extractVersion3Metadata($xml);
         }
-        
+
         // Extract all strings
         $this->extractStrings($xml);
     }
@@ -337,6 +339,47 @@ class ELPParser implements \JsonSerializable
     public function getLearningResourceType(): string
     {
         return $this->learningResourceType;
+    }
+
+    /**
+     * Extract metadata from version 3 XML format
+     *
+     * @param SimpleXMLElement $xml XML document
+     * 
+     * @return void
+     */
+    protected function extractVersion3Metadata(SimpleXMLElement $xml): void
+    {
+        if (isset($xml->dictionary)) {
+            foreach ($xml->dictionary->children() as $element) {
+                if ($element->getName() === 'string' && isset($element['role']) && $element['role'] == 'key') {
+                    $key = (string)$element['value'];
+                    $nextElement = $element->next();
+                    
+                    if ($nextElement) {
+                        $value = (string)$nextElement['value'];
+                        
+                        switch ($key) {
+                        case '_title':
+                            $this->title = $value;
+                            break;
+                        case '_description':
+                            $this->description = $value;
+                            break;
+                        case '_author':
+                            $this->author = $value;
+                            break;
+                        case '_license':
+                            $this->license = $value;
+                            break;
+                        case '_learningResourceType':
+                            $this->learningResourceType = $value;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
