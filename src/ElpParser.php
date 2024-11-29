@@ -350,36 +350,33 @@ class ELPParser implements \JsonSerializable
      */
     protected function extractVersion3Metadata(SimpleXMLElement $xml): void
     {
-        if (isset($xml->dictionary)) {
-            foreach ($xml->dictionary->children() as $element) {
-                if ($element->getName() === 'string' && isset($element['role']) && $element['role'] == 'key') {
-                    $key = (string)$element['value'];
-                    $nextElement = $element->next();
-                    
-                    if ($nextElement) {
-                        $value = (string)$nextElement['value'];
-                        
-                        switch ($key) {
-                        case '_title':
-                            $this->title = $value;
-                            break;
-                        case '_description':
-                            $this->description = $value;
-                            break;
-                        case '_author':
-                            $this->author = $value;
-                            break;
-                        case '_license':
-                            $this->license = $value;
-                            break;
-                        case '_learningResourceType':
-                            $this->learningResourceType = $value;
-                            break;
-                        }
-                    }
+        if (!isset($xml->dictionary)) {
+            return;
+        }
+
+        $metadata = [];
+        $currentKey = null;
+
+        foreach ($xml->dictionary->children() as $element) {
+            if ($element->getName() === 'string') {
+                $role = (string)$element['role'];
+                $value = (string)$element['value'];
+
+                if ($role === 'key') {
+                    $currentKey = $value;
+                } elseif ($currentKey !== null) {
+                    $metadata[$currentKey] = $value;
+                    $currentKey = null;
                 }
             }
         }
+
+        // Map the metadata to properties
+        $this->title = $metadata['title'] ?? '';
+        $this->description = $metadata['description'] ?? '';
+        $this->author = $metadata['author'] ?? '';
+        $this->license = $metadata['license'] ?? '';
+        $this->learningResourceType = $metadata['learningResourceType'] ?? '';
     }
 
     /**
