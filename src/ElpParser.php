@@ -137,8 +137,8 @@ class ELPParser implements \JsonSerializable
 
         // Check MIME type
         $mimeType = mime_content_type($this->filePath);
-        print_r($mimeType);
-        die();
+        // print_r($mimeType);
+        // die();
         if ($mimeType !== 'application/zip') {
             throw new Exception('The file is not a valid ZIP file.');
         }
