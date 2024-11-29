@@ -39,9 +39,9 @@
         }
     },
     "require-dev": {
-        "pestphp/pest": "^1.23.1",
-        "phpunit/phpunit": "^9.6.21",
-        "squizlabs/php_codesniffer": "^3.11.1"
+        "pestphp/pest": "*",
+        "phpunit/phpunit": "*",
+        "squizlabs/php_codesniffer": "*"
     },
     "archive": {
         "exclude": [
