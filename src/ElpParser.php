@@ -131,8 +131,12 @@ class ELPParser implements \JsonSerializable
     {
         $zip = new ZipArchive();
         
+        if (!file_exists($this->filePath)) {
+            throw new Exception('Unable to open ELP file');
+        }
+
         if ($zip->open($this->filePath) !== true) {
-            throw new Exception("Unable to open ELP file: {$this->filePath}");
+            throw new Exception('Unable to open ELP file');
         }
 
         // Detect version
