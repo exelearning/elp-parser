@@ -42,5 +42,15 @@
         "pestphp/pest": "^1.23.1",
         "phpunit/phpunit": "^9.6.21",
         "squizlabs/php_codesniffer": "^3.11.1"
-    }
+    },
+    "archive": {
+        "exclude": [
+            "tests",
+            "README.md",
+            "examples",
+            ".github",
+            ".git",
+            "test.php"
+        ]
+    }    
 }
