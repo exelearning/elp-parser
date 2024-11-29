@@ -73,30 +73,33 @@ it(
 );
 
 it(
-    'can extract an ELP file', function () {
-        $elpFile = __DIR__ . '/../Fixtures/exe2-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
-        $extractPath = __DIR__ . '/../Fixtures/extracted_v2';
+    'can extract an ELP file using a temporary directory', function () {
+    $elpFile = __DIR__ . '/../Fixtures/exe3-ipe1_parada3.elp';
     
-        // Ensure the test file exists
-        expect(file_exists($elpFile))->toBeTrue('Test ELP file for extraction not found');
+    // Create a unique temporary directory
+    $tempDir = sys_get_temp_dir() . '/elp_extracted_' . uniqid();
+    mkdir($tempDir, 0700, true);
     
+    try {
+        // Create an instance of the parser
         $parser = ELPParser::fromFile($elpFile);
-    
-        // Attempt to extract
-        $parser->extract($extractPath);
-    
-        // Check that extraction was successful
-        expect(is_dir($extractPath))->toBeTrue('Extraction directory was not created');
-        expect(file_exists($extractPath . '/content.xml'))->toBeTrue('content.xml not found in extracted files');
-    
-        // Clean up extracted files (optional)
-        $files = glob($extractPath . '/*');
-        foreach ($files as $file) {
-            unlink($file);
+        
+        // Attempt to extract to the temporary directory
+        $parser->extract($tempDir);
+        
+        // Verify that the extraction directory was created
+        expect(is_dir($tempDir))->toBeTrue('The extraction directory was not created');
+        
+        // Verify that the contentv3.xml file exists within the extracted files
+        expect(file_exists($tempDir . '/contentv3.xml'))->toBeTrue('contentv3.xml not found in the extracted files');
+    } finally {
+        // Clean up the extracted files
+        if (is_dir($tempDir)) {
+            array_map('unlink', glob("$tempDir/*"));
+            rmdir($tempDir);
         }
-        rmdir($extractPath);
     }
-);
+});
 
 it(
     'throws an exception for invalid ELP file', function () {
@@ -106,15 +109,17 @@ it(
         expect(fn() => ELPParser::fromFile($invalidFile0))
             ->toThrow(Exception::class, 'File does not exist.');
 
-        // Test with ZIP but no XML
-        $invalidFile1 = __DIR__ . '/../Fixtures/invalid.zip';    
+        // Test with invalid file
+        $invalidFile1 = __DIR__ . '/../Fixtures/invalid.jpg';
         expect(fn() => ELPParser::fromFile($invalidFile1))
+            ->toThrow(Exception::class, 'The file is not a valid ZIP file.');
+
+        // Test with ZIP but no XML
+        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.zip';    
+        expect(fn() => ELPParser::fromFile($invalidFile2))
             ->toThrow(Exception::class, 'Invalid ELP file: No content XML found.');
     
-        // Test with invalid file
-        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.png';
-        expect(fn() => ELPParser::fromFile($invalidFile2))
-            ->toThrow(Exception::class, 'Unable to open the ZIP file.');
+
 
     }
 );

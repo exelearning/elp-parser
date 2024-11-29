@@ -9,3 +9,6 @@ composer.lock
 
 # Ignore folders inside tests/fixtures/
 tests/fixtures/*/
+
+# Ignore test file
+test.php
