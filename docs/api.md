@@ -1,79 +1,123 @@
 # API Reference
 
-## ElpParser Class
+## ELPParser Class
+
+ELPParser class for parsing .elp (eXeLearning) project files. This class provides functionality to parse .elp files, which are ZIP archives containing XML content for eXeLearning projects. It supports both version 2 and 3 formats.
+
+**Namespace:** `Exelearning`
+
+**Implements:** `JsonSerializable`
+
+### Constructor
+
+#### `__construct(string $filePath)`
+
+Create a new ELPParser instance.
+
+- **Parameters:**
+  - `$filePath` (string): Path to the .elp file
+- **Throws:** `Exception` if file cannot be opened or is invalid
+- **Return:** void
 
 ### Static Methods
 
-#### `fromFile(string $filePath): ElpParser`
+#### `fromFile(string $filePath): ELPParser`
 
-Creates a new parser instance from an ELP file.
+Static method to create an ELPParser from a file path.
 
-- Parameters:
-  - `$filePath`: string - Path to the ELP file
-- Returns: ElpParser
-- Throws: Exception if file is invalid or unreadable
+- **Parameters:**
+  - `$filePath` (string): Path to the .elp file
+- **Throws:** `Exception` if file cannot be opened or is invalid
+- **Returns:** `ELPParser`
 
 ### Public Methods
 
 #### `getVersion(): int`
 
-Returns the version of the ELP package.
+Get the detected ELP file version.
 
-- Returns: int - Version number (2 or 3)
+- **Returns:** int - ELP file version (2 or 3)
 
 #### `getStrings(): array`
 
-Returns all strings extracted from the package.
+Get all extracted strings.
 
-- Returns: array - Array of strings
+- **Returns:** array - List of extracted strings
 
 #### `getTitle(): string`
 
-Returns the package title.
+Get the title of the ELP content.
 
-- Returns: string
+- **Returns:** string
 
 #### `getDescription(): string`
 
-Returns the package description.
+Get the description of the ELP content.
 
-- Returns: string
+- **Returns:** string
 
 #### `getAuthor(): string`
 
-Returns the package author.
+Get the author of the ELP content.
 
-- Returns: string
+- **Returns:** string
 
 #### `getLicense(): string`
 
-Returns the package license.
+Get the license of the ELP content.
 
-- Returns: string
+- **Returns:** string
 
 #### `getLanguage(): string`
 
-Returns the package language.
+Get the language of the ELP content.
 
-- Returns: string
+- **Returns:** string
 
 #### `getLearningResourceType(): string`
 
-Returns the learning resource type.
+Get the learning resource type.
 
-- Returns: string
+- **Returns:** string
 
 #### `toArray(): array`
 
-Converts the parser data to an array.
+Convert parser data to an array.
 
-- Returns: array - Array representation of the parser data
+- **Returns:** array - Array containing:
+  - version: int
+  - title: string
+  - description: string
+  - author: string
+  - license: string
+  - language: string
+  - learningResourceType: string
+  - strings: array
+
+#### `jsonSerialize(): mixed`
+
+JSON serialization method implementing JsonSerializable interface.
+
+- **Returns:** mixed - Data to be JSON serialized
 
 #### `extract(string $destinationPath): void`
 
-Extracts the package contents to the specified directory.
+Extract contents of an ELP file to a specified directory.
 
-- Parameters:
-  - `$destinationPath`: string - Destination directory path
-- Returns: void
-- Throws: Exception if extraction fails
+- **Parameters:**
+  - `$destinationPath` (string): Directory to extract contents to
+- **Throws:** `Exception` if extraction fails
+- **Returns:** void
+
+### Protected Properties
+
+- `$filePath` (string): Path to the .elp file
+- `$version` (int): ELP file version (2 or 3)
+- `$content` (array): Extracted content and metadata
+- `$strings` (array): Raw extracted strings
+- `$title` (string): Title of the ELP content
+- `$description` (string): Description of the ELP content
+- `$author` (string): Author of the ELP content
+- `$license` (string): License of the ELP content
+- `$language` (string): Language of the ELP content
+- `$learningResourceType` (string): Learning resource type
