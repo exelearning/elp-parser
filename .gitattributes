@@ -2,6 +2,8 @@
 /.editorconfig     export-ignore
 /.env              export-ignore
 /.github/          export-ignore
+/mkdocs.yml        export-ignore
+/docs/             export-ignore
 /tests/            export-ignore
 /vendor/           export-ignore
 composer.lock      export-ignore

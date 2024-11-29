@@ -5,7 +5,7 @@ composer.lock
 .aider*
 .env
 .phpunit.result.cache
-
+env/
 
 # Ignore folders inside tests/fixtures/
 tests/fixtures/*/

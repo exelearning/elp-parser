@@ -29,7 +29,7 @@ $parser->extract('destination/path');
 
 ## Requirements
 
-- PHP 7.4 or higher
+- PHP 8.0 or higher
 - SimpleXML extension
 - ZipArchive extension
 
