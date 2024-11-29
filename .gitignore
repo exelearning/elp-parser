@@ -1,0 +1,11 @@
+vendor
+composer.lock
+.idea
+.DS_Store
+.aider*
+.env
+.phpunit.result.cache
+
+
+# Ignore folders inside tests/fixtures/
+tests/fixtures/*/

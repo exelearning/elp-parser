@@ -1,0 +1,46 @@
+{
+    "name": "exelearning/elp-parser",
+    "description": "Parse eXeLearning .elp files",
+    "keywords": [
+        "exelearning",
+        "elp",
+        "parser"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "INTEF",
+            "email": "cedec@educacion.gob.es",
+            "role": "Developer"
+        }
+    ],
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "lint": "phpcs . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php",
+        "fix": "phpcbf . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php"
+    },
+    "autoload": {
+        "psr-4": {
+            "Exelearning\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Exelearning\\ElpParser\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "php": "^8.0"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^1.23.1",
+        "phpunit/phpunit": "^9.6.21",
+        "squizlabs/php_codesniffer": "^3.11.1"
+    }
+}
