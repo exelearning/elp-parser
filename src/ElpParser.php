@@ -370,26 +370,63 @@ class ELPParser implements \JsonSerializable
         $currentKey = null;
 
         foreach ($xml->dictionary->children() as $element) {
-            if ($element->getName() === 'string') {
+            $elementName = $element->getName();
+
+            if ($elementName === 'string') {
                 $role = (string)$element['role'];
                 $value = (string)$element['value'];
 
                 if ($role === 'key') {
                     $currentKey = $value;
-                } elseif ($currentKey !== null) {
-                    $metadata[$currentKey] = $value;
-                    $currentKey = null;
                 }
+            } elseif ($currentKey !== null) {
+                // Extract the value based on the type of element
+                switch ($elementName) {
+                case 'unicode':
+                    $metadata[$currentKey] = (string)$element['value'];
+                    break;
+                case 'bool':
+                    $metadata[$currentKey] = ((string)$element['value']) === '1';
+                    break;
+                case 'int':
+                    $metadata[$currentKey] = (int)$element['value'];
+                    break;
+                case 'list':
+                    // Handle lists if necessary
+                    $listValues = [];
+                    foreach ($element->children() as $listItem) {
+                        if ($listItem->getName() === 'unicode') {
+                            $listValues[] = (string)$listItem['value'];
+                        }
+                        // Add handling for other types of elements within the list if necessary
+                    }
+                    $metadata[$currentKey] = $listValues;
+                    break;
+                case 'dictionary':
+                    // Handle nested dictionaries if necessary
+                    // This may require a recursive function
+                    // For simplicity, it can be omitted or implemented as needed
+                    break;
+                    // Add other cases as needed
+                default:
+                    // Handle unknown types or ignore them
+                    break;
+                }
+
+                // Reset the current key after assigning the value
+                $currentKey = null;
             }
         }
 
-        // Map the metadata to properties
-        $this->title = $metadata['title'] ?? '';
-        $this->description = $metadata['description'] ?? '';
-        $this->author = $metadata['author'] ?? '';
-        $this->license = $metadata['license'] ?? '';
-        $this->learningResourceType = $metadata['learningResourceType'] ?? '';
+        // Map the metadata to the corresponding properties
+        $this->title = $metadata['_title'] ?? '';
+        $this->description = $metadata['_description'] ?? '';
+        $this->author = $metadata['_author'] ?? '';
+        $this->license = $metadata['_license'] ?? '';
+        $this->learningResourceType = $metadata['_learningResourceType'] ?? '';
+
     }
+
 
     /**
      * Serialization method
