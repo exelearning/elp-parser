@@ -39,27 +39,3 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-      # Set up Python environment
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-
-      # Install dependencies
-      - name: Install dependencies
-        run: |
-          pip install mkdocs==1.5.3 mkdocs-material pymdown-extensions mkdocs-minify-plugin
-
-      # Build the MkDocs site
-      - name: Build MkDocs site
-        run: mkdocs build
-
-      # Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: site
-
