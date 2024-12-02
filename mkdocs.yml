@@ -2,6 +2,7 @@ site_name: ELP Parser
 site_description: A PHP library for parsing ELP (eXe Learning Package) files
 site_author: CEDEC
 repo_url: https://github.com/exelearning/elp-parser
+edit_uri: blob/main/
 
 extra:
   social:
