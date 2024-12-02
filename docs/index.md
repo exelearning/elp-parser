@@ -37,7 +37,7 @@ $parser->extract('destination/path');
 Install the ELP Parser via Composer by running the following command in your project directory:
 
 ```bash
-composer require agustinx/elp-parser
+composer require exelearning/elp-parser
 ```
 
 ### Basic Usage
