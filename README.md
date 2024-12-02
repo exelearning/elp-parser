@@ -1,7 +1,3 @@
-Aquí tienes el texto actualizado según tus indicaciones:
-
----
-
 # eXeLearning .elp Parser for PHP
 
 Simple, fast, and extension-free parser for eXeLearning project files
