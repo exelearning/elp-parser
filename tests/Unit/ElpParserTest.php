@@ -108,6 +108,68 @@ it(
 );
 
 it(
+    'can parse a version v26 simple ELP file', function () {
+        $elpFile = __DIR__ . '/../Fixtures/editado-con-2.6-simplificado.elp';
+    
+        // Ensure the test file exists
+        expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
+    
+        $parser = ELPParser::fromFile($elpFile);
+    
+        // Check version detection
+        expect($parser->getVersion())->toBe(3);
+
+        // Check metadata fields
+        expect($parser->getTitle())->toBe('Accessibility revision');
+        expect($parser->getDescription())->toContain('vfggg');
+        expect($parser->getAuthor())->toBe('The eXeLearning Team');
+        expect($parser->getLicense())->toBe('None');
+        expect($parser->getLearningResourceType())->toBe('');
+        expect($parser->getLanguage())->toBe('en');
+
+
+        // Check extracted strings
+        $strings = $parser->getStrings();
+        expect($strings)->toBeArray();
+        // expect(count($strings))->toBeGreaterThan(0);
+    
+        // Optionally, check for some expected content
+        // expect($strings)->toContain('Some expected text from version 3 file');
+    }
+);
+
+it(
+    'can parse a version v26 more simple ELP file', function () {
+        $elpFile = __DIR__ . '/../Fixtures/editado-con-2.6-sencillo.elp';
+    
+        // Ensure the test file exists
+        expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
+    
+        $parser = ELPParser::fromFile($elpFile);
+    
+        // Check version detection
+        expect($parser->getVersion())->toBe(3);
+
+        // Check metadata fields
+        expect($parser->getTitle())->toBe('Contenido para pruebas de eXe 3');
+        expect($parser->getDescription())->toContain('Contenido para pruebas de eXe 3. Curso de Diseño Web. Desarrollo web con estándares. Introducción y HTML.');
+        expect($parser->getAuthor())->toBe('El Equipo de eXeLearning');
+        expect($parser->getLicense())->toBe('None');
+        expect($parser->getLearningResourceType())->toBe('master class');
+        expect($parser->getLanguage())->toBe('es');
+
+
+        // Check extracted strings
+        $strings = $parser->getStrings();
+        expect($strings)->toBeArray();
+        // expect(count($strings))->toBeGreaterThan(0);
+    
+        // Optionally, check for some expected content
+        // expect($strings)->toContain('Some expected text from version 3 file');
+    }
+);
+
+it(
     'throws an exception for invalid ELP file', function () {
 
         // Test with inexistent file
