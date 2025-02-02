@@ -154,11 +154,11 @@ class ELPParser implements \JsonSerializable
         }
 
         // Detect version
-        if ($zip->locateName('content.xml') !== false) {
-            $this->version = 2;
+        if ($zip->locateName('content.xml') !== false && $zip->locateName('index.html') !== false) {
+            $this->version = 3;
             $contentFile = 'content.xml';
         } elseif ($zip->locateName('contentv3.xml') !== false) {
-            $this->version = 3;
+            $this->version = 2;
             $contentFile = 'contentv3.xml';
         } else {
             $zip->close();
@@ -276,13 +276,13 @@ class ELPParser implements \JsonSerializable
      * @return array Parsed ELP file data
      */
     /**
-     * Extract metadata from version 2 XML format
+     * Extract metadata from version 3 XML format
      *
      * @param SimpleXMLElement $xml XML document
      * 
      * @return void
      */
-    protected function extractVersion2Metadata(SimpleXMLElement $xml): void
+    protected function extractVersion3Metadata(SimpleXMLElement $xml): void
     {
         if (isset($xml->odeProperties)) {
             foreach ($xml->odeProperties->odeProperty as $property) {
@@ -374,13 +374,13 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Extract metadata from version 3 XML format
+     * Extract metadata from version 2 XML format
      *
      * @param SimpleXMLElement $xml XML document
      * 
      * @return void
      */
-    protected function extractVersion3Metadata(SimpleXMLElement $xml): void
+    protected function extractVersion2Metadata(SimpleXMLElement $xml): void
     {
         if (!isset($xml->dictionary)) {
             return;

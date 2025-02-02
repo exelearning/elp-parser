@@ -17,8 +17,8 @@ use Exelearning\ELPParser;
 use Exception;
 
 it(
-    'can parse a version 2 ELP file', function () {
-        $elpFile = __DIR__ . '/../Fixtures/exe2-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
+    'can parse a version 3 ELP file', function () {
+        $elpFile = __DIR__ . '/../Fixtures/exe3-accessibility-revision.elp';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 2 not found');
@@ -26,7 +26,37 @@ it(
         $parser = ELPParser::fromFile($elpFile);
     
         // Check version detection
-        expect($parser->getVersion())->toBe(2);
+        expect($parser->getVersion())->toBe(3);
+
+        // Check metadata fields
+        expect($parser->getTitle())->toBe('Accessibility revision');
+        expect($parser->getDescription())->toContain('vfggg');
+        expect($parser->getAuthor())->toBe('The eXeLearning Team');
+        expect($parser->getLicense())->toBe('propietary license');
+        expect($parser->getLearningResourceType())->toBe('guided reading');
+        expect($parser->getLanguage())->toBe('en');
+
+        // Check extracted strings
+        $strings = $parser->getStrings();
+        expect($strings)->toBeArray();
+        expect(count($strings))->toBeGreaterThan(0);
+    
+        // Optionally, check for some expected content
+        // expect($strings)->toContain('Some expected text from version 2 file');
+    }
+);
+
+it(
+    'can parse another version 3 ELP file', function () {
+        $elpFile = __DIR__ . '/../Fixtures/exe3-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
+    
+        // Ensure the test file exists
+        expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 2 not found');
+    
+        $parser = ELPParser::fromFile($elpFile);
+    
+        // Check version detection
+        expect($parser->getVersion())->toBe(3);
 
         // Check metadata fields
         expect($parser->getTitle())->toBe('Parada 2: Riesgos de la ruta | Itinerario para la empleabilidad I');
@@ -47,8 +77,8 @@ it(
 );
 
 it(
-    'can parse a version 3 ELP file', function () {
-        $elpFile = __DIR__ . '/../Fixtures/exe3-ipe1_parada2.elp';
+    'can parse a version 2 ELP file', function () {
+        $elpFile = __DIR__ . '/../Fixtures/exe2-ipe1_parada2.elp';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
@@ -56,7 +86,7 @@ it(
         $parser = ELPParser::fromFile($elpFile);
     
         // Check version detection
-        expect($parser->getVersion())->toBe(3);
+        expect($parser->getVersion())->toBe(2);
 
         // Check metadata fields
         expect($parser->getTitle())->toBe('Parada 2: Riesgos de la ruta | Itinerario para la empleabilidad I');
@@ -79,7 +109,7 @@ it(
 
 it(
     'can extract an ELP file using a temporary directory', function () {
-        $elpFile = __DIR__ . '/../Fixtures/exe3-ipe1_parada3.elp';
+        $elpFile = __DIR__ . '/../Fixtures/exe2-ipe1_parada3.elp';
     
         // Create a unique temporary directory
         $tempDir = sys_get_temp_dir() . '/elp_extracted_' . uniqid();
@@ -109,7 +139,7 @@ it(
 
 it(
     'can parse a version v26 simple ELP file', function () {
-        $elpFile = __DIR__ . '/../Fixtures/editado-con-2.6-simplificado.elp';
+        $elpFile = __DIR__ . '/../Fixtures/exe26-editado-con-2.6-simplificado.elp';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
@@ -117,7 +147,7 @@ it(
         $parser = ELPParser::fromFile($elpFile);
     
         // Check version detection
-        expect($parser->getVersion())->toBe(3);
+        expect($parser->getVersion())->toBe(2);
 
         // Check metadata fields
         expect($parser->getTitle())->toBe('Accessibility revision');
@@ -140,7 +170,7 @@ it(
 
 it(
     'can parse a version v26 more simple ELP file', function () {
-        $elpFile = __DIR__ . '/../Fixtures/editado-con-2.6-sencillo.elp';
+        $elpFile = __DIR__ . '/../Fixtures/exe26-editado-con-2.6-sencillo.elp';
     
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
@@ -148,7 +178,7 @@ it(
         $parser = ELPParser::fromFile($elpFile);
     
         // Check version detection
-        expect($parser->getVersion())->toBe(3);
+        expect($parser->getVersion())->toBe(2);
 
         // Check metadata fields
         expect($parser->getTitle())->toBe('Contenido para pruebas de eXe 3');
