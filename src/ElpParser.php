@@ -479,6 +479,256 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
+     * Export parsed data as JSON string or file
+     *
+     * If a destination path is provided, the JSON string will be written to the
+     * given file. The method returns the JSON representation in any case.
+     *
+     * @param string|null $destinationPath Optional path to save the JSON file
+     *
+     * @throws Exception If the file cannot be written
+     * @return string    JSON representation of the parsed ELP data
+     */
+    public function exportJson(?string $destinationPath = null): string
+    {
+        $json = json_encode($this, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        if ($json === false) {
+            throw new Exception('Failed to encode JSON: ' . json_last_error_msg());
+        }
+
+        if ($destinationPath !== null) {
+            if (file_put_contents($destinationPath, $json) === false) {
+                throw new Exception('Unable to write JSON file.');
+            }
+        }
+
+        return $json;
+    }
+
+    /**
+     * Get detailed metadata and content structure as an array
+     *
+     * This method parses the underlying XML to build a rich metadata
+     * representation including package information, Dublin Core data,
+     * LOM and LOM-ES schemas as well as a simplified page tree.
+     *
+     * @throws Exception If the XML content cannot be parsed
+     * @return array Metadata and content information
+     */
+    public function getMetadata(): array
+    {
+        $zip = new ZipArchive();
+        if ($zip->open($this->filePath) !== true) {
+            throw new Exception('Unable to open the ZIP file.');
+        }
+
+        $contentFile = $this->version === 2 ? 'contentv3.xml' : 'content.xml';
+        $xmlContent = $zip->getFromName($contentFile);
+        $zip->close();
+
+        if ($xmlContent === false) {
+            throw new Exception('Failed to read XML content.');
+        }
+
+        libxml_use_internal_errors(true);
+        $xml = simplexml_load_string($xmlContent);
+        if ($xml === false) {
+            throw new Exception('XML Parsing error');
+        }
+
+        $data = $this->parseElement($xml->dictionary);
+
+        $meta = [
+            [
+                'schema' => 'Package',
+                'content' => [
+                    'title' => $data['_title'] ?? '',
+                    'author' => $data['_author'] ?? '',
+                    'language' => $data['_lang'] ?? '',
+                    'description' => $data['_description'] ?? '',
+                    'license' => $data['license'] ?? '',
+                    'classification' => '',
+                ],
+            ],
+        ];
+
+        if (isset($data['dublinCore'])) {
+            $dc = $data['dublinCore'];
+            $meta[] = [
+                'schema' => 'Dublin core',
+                'content' => [
+                    'title' => $dc['title'] ?? '',
+                    'author' => $dc['creator'] ?? '',
+                    'language' => $dc['language'] ?? '',
+                    'description' => $dc['description'] ?? '',
+                    'license' => [ 'rights' => $dc['rights'] ?? '' ],
+                    'classification' => [ 'source' => $dc['source'] ?? '', 'taxon_path' => [] ],
+                ],
+            ];
+        }
+
+        if (isset($data['lom'])) {
+            $lom = $data['lom'];
+            $meta[] = [
+                'schema' => 'LOM v1.0',
+                'content' => [
+                    'title' => $lom['general']['title']['string'] ?? [],
+                    'author' => $lom['lifeCycle']['contribute']['entity'] ?? [],
+                    'language' => $lom['general']['language'] ?? [],
+                    'description' => $lom['general']['description'] ?? [],
+                    'rights' => $lom['rights'] ?? [],
+                    'classification' => $lom['classification'] ?? [],
+                ],
+            ];
+        }
+
+        if (isset($data['lomEs'])) {
+            $lomEs = $data['lomEs'];
+            $meta[] = [
+                'schema' => 'LOM-ES v1.0',
+                'content' => [
+                    'title' => $lomEs['general']['title']['string'] ?? [],
+                    'author' => $lomEs['lifeCycle']['contribute']['entity']['name'] ?? ($lomEs['lifeCycle']['contribute']['entity'] ?? ''),
+                    'language' => $lomEs['general']['language'] ?? [],
+                    'description' => $lomEs['general']['description'] ?? [],
+                    'rights' => $lomEs['rights'] ?? [],
+                    'classification' => $lomEs['classification'] ?? [],
+                ],
+            ];
+        }
+
+        $pages = [];
+        if (isset($data['_nodeIdDict']['0'])) {
+            $this->collectPages($data['_nodeIdDict']['0'], 0, $pages);
+        }
+
+        return [
+            'metadata' => $meta,
+            'content' => [
+                'file' => basename($this->filePath),
+                'pages' => $pages,
+            ],
+        ];
+    }
+
+    /**
+     * Recursively parse a dictionary structure
+     *
+     * @param SimpleXMLElement $element XML element
+     *
+     * @return mixed Parsed data
+     */
+    protected function parseElement(SimpleXMLElement $element): mixed
+    {
+        $name = $element->getName();
+
+        switch ($name) {
+        case 'unicode':
+        case 'string':
+            return (string) $element['value'];
+        case 'int':
+            return (int) $element['value'];
+        case 'bool':
+            return ((string) $element['value']) === '1';
+        case 'list':
+            $list = [];
+            foreach ($element->children() as $child) {
+                $list[] = $this->parseElement($child);
+            }
+            return $list;
+        case 'dictionary':
+            $dict = [];
+            $key = null;
+            foreach ($element->children() as $child) {
+                $cname = $child->getName();
+                if (($cname === 'string' || $cname === 'unicode') && (string) $child['role'] === 'key') {
+                    $key = (string) $child['value'];
+                } elseif ($key !== null) {
+                    $dict[$key] = $this->parseElement($child);
+                    $key = null;
+                }
+            }
+            return $dict;
+        case 'instance':
+            return $this->parseElement($element->dictionary);
+        case 'none':
+            return null;
+        case 'reference':
+            return ['ref' => (string) $element['key']];
+        default:
+            return null;
+        }
+    }
+
+    /**
+     * Collect page data recursively
+     *
+     * @param array $node  Node information
+     * @param int   $level Current depth level
+     * @param array $pages Accumulated pages
+     *
+     * @return void
+     */
+    protected function collectPages(array $node, int $level, array &$pages): void
+    {
+        $title = $node['_title'] ?? '';
+        $filename = $level === 0 ? 'index.html' : $this->slug($title) . '.html';
+
+        $idevices = [];
+        if (isset($node['idevices']) && is_array($node['idevices'])) {
+            foreach ($node['idevices'] as $idevice) {
+                $html = '';
+                if (isset($idevice['fields']) && is_array($idevice['fields'])) {
+                    foreach ($idevice['fields'] as $field) {
+                        if (isset($field['content_w_resourcePaths'])) {
+                            $html = $field['content_w_resourcePaths'];
+                            break;
+                        }
+                    }
+                }
+                $idevices[] = [
+                    'id' => $idevice['_id'] ?? '',
+                    'type' => $idevice['_iDeviceDir'] ?? ($idevice['class_'] ?? ''),
+                    'title' => $idevice['_title'] ?? '',
+                    'text' => trim(strip_tags($html)),
+                    'html_code' => $html,
+                ];
+            }
+        }
+
+        $pages[] = [
+            'filename' => $filename,
+            'pagename' => $title,
+            'level' => $level,
+            'idevices' => $idevices,
+        ];
+
+        if (isset($node['children']) && is_array($node['children'])) {
+            foreach ($node['children'] as $child) {
+                if (is_array($child)) {
+                    $this->collectPages($child, $level + 1, $pages);
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a filename-friendly slug from a string
+     *
+     * @param string $text Input text
+     *
+     * @return string Slug
+     */
+    protected function slug(string $text): string
+    {
+        $slug = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+        $slug = strtolower($slug);
+        $slug = preg_replace('/[^a-z0-9]+/', '_', $slug);
+        return trim($slug, '_');
+    }
+
+    /**
      * Extract contents of an ELP file to a specified directory
      *
      * @param string $destinationPath Directory to extract contents to

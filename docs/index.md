@@ -6,6 +6,7 @@ ELP Parser is a PHP library designed to parse and extract content from ELP (eXe 
 
 - Parse ELP files (both version 2 and 3 supported)
 - Extract metadata like title, description, author, etc.
+- Retrieve a complete metadata tree
 - Access learning resource information
 - Extract package contents to a specified directory
 - JSON serialization support
@@ -131,6 +132,17 @@ $data = $parser->toArray();
 
 // Get JSON representation
 $json = json_encode($parser);
+```
+
+#### Exporting to a JSON file
+
+You can directly export the parsed data to a JSON file using `exportJson()`:
+
+```php
+$parser->exportJson('path/to/output.json');
+
+// Obtain a metadata tree
+$meta = $parser->getMetadata();
 ```
 
 ### Version Compatibility

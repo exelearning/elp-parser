@@ -100,6 +100,23 @@ JSON serialization method implementing JsonSerializable interface.
 
 - **Returns:** mixed - Data to be JSON serialized
 
+#### `exportJson(?string $destinationPath = null): string`
+
+Export parsed data to JSON. If a destination path is provided, the JSON will be written to that file.
+
+- **Parameters:**
+  - `$destinationPath` (string|null): Optional file path for the JSON output
+- **Throws:** `Exception` if the JSON cannot be written
+- **Returns:** string - JSON representation of the parsed data
+
+#### `getMetadata(): array`
+
+Return a detailed metadata array containing Package, Dublin Core, LOM and LOM-ES
+information together with the page tree.
+
+- **Throws:** `Exception` if the XML cannot be parsed
+- **Returns:** array - Metadata and content structure
+
 #### `extract(string $destinationPath): void`
 
 Extract contents of an ELP file to a specified directory.
