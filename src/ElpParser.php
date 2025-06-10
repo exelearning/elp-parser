@@ -762,8 +762,8 @@ class ELPParser implements \JsonSerializable
  * @author  WordPress contributors
  * @license GPL-2.0-or-later
  *
- * @param string $text   Text that might have accent characters.
- * @param string $locale Optional. The locale to use for accent removal.
+ * @param  string $text   Text that might have accent characters.
+ * @param  string $locale Optional. The locale to use for accent removal.
  * @return string Filtered string with replaced characters.
  *
  * @see https://github.com/WordPress/wordpress-develop/blob/6.8.1/src/wp-includes/formatting.php
@@ -832,9 +832,10 @@ function remove_accents(string $text, string $locale = ''): string
             'Ố' => 'O', 'ố' => 'o', 'Ớ' => 'O', 'ớ' => 'o', 'Ứ' => 'U', 'ứ' => 'u',
         ];
 
-        if ('de_DE' === $locale || 'de_DE_formal' === $locale ||
-            'de_CH' === $locale || 'de_CH_informal' === $locale ||
-            'de_AT' === $locale) {
+        if ('de_DE' === $locale || 'de_DE_formal' === $locale 
+            || 'de_CH' === $locale || 'de_CH_informal' === $locale 
+            || 'de_AT' === $locale
+        ) {
             $chars['Ä'] = 'Ae';
             $chars['ä'] = 'ae';
             $chars['Ö'] = 'Oe';
@@ -883,7 +884,7 @@ function remove_accents(string $text, string $locale = ''): string
 /**
  * Determine if a string is valid UTF-8.
  *
- * @param string $str Input string.
+ * @param  string $str Input string.
  * @return bool True if the string is valid UTF-8.
  */
 function seems_utf8(string $str): bool
