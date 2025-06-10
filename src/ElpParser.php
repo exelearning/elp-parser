@@ -722,7 +722,7 @@ class ELPParser implements \JsonSerializable
      */
     protected function slug(string $text): string
     {
-        $slug = remove_accents($text);
+        $slug = removeAccents($text);
         $slug = strtolower($slug);
         $slug = preg_replace('/[^a-z0-9]+/', '_', $slug);
         return trim($slug, '_');
@@ -759,22 +759,21 @@ class ELPParser implements \JsonSerializable
  * This function is copied from WordPress 6.8.1 and retains its original
  * copyright notice.
  *
- * @author  WordPress contributors
- * @license GPL-2.0-or-later
- *
  * @param  string $text   Text that might have accent characters.
  * @param  string $locale Optional. The locale to use for accent removal.
  * @return string Filtered string with replaced characters.
  *
+ * @author  WordPress contributors
+ * @license GPL-2.0-or-later
  * @see https://github.com/WordPress/wordpress-develop/blob/6.8.1/src/wp-includes/formatting.php
  */
-function remove_accents(string $text, string $locale = ''): string
+function removeAccents(string $text, string $locale = ''): string
 {
     if (!preg_match('/[\x80-\xff]/', $text)) {
         return $text;
     }
 
-    if (seems_utf8($text)) {
+    if (seemsUtf8($text)) {
         if (function_exists('normalizer_is_normalized') && function_exists('normalizer_normalize')) {
             if (!normalizer_is_normalized($text)) {
                 $text = normalizer_normalize($text);
@@ -887,7 +886,7 @@ function remove_accents(string $text, string $locale = ''): string
  * @param  string $str Input string.
  * @return bool True if the string is valid UTF-8.
  */
-function seems_utf8(string $str): bool
+function seemsUtf8(string $str): bool
 {
     return mb_detect_encoding($str, 'UTF-8', true) !== false;
 }
