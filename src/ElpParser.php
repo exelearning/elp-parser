@@ -759,8 +759,8 @@ class ELPParser implements \JsonSerializable
  * This function is copied from WordPress 6.8.1 and retains its original
  * copyright notice.
  *
- * @param  string $text   Text that might have accent characters.
- * @param  string $locale Optional. The locale to use for accent removal.
+ * @param string $text   Text that might have accent characters.
+ * @param string $locale Optional. The locale to use for accent removal.
  *
  * @return string Filtered string with replaced characters.
  *
@@ -884,7 +884,7 @@ function removeAccents(string $text, string $locale = ''): string
 /**
  * Determine if a string is valid UTF-8.
  *
- * @param  string $str Input string.
+ * @param string $str Input string.
  *
  * @return bool True if the string is valid UTF-8.
  */
