@@ -761,11 +761,12 @@ class ELPParser implements \JsonSerializable
  *
  * @param  string $text   Text that might have accent characters.
  * @param  string $locale Optional. The locale to use for accent removal.
+ *
  * @return string Filtered string with replaced characters.
  *
  * @author  WordPress contributors
  * @license GPL-2.0-or-later
- * @see https://github.com/WordPress/wordpress-develop/blob/6.8.1/src/wp-includes/formatting.php
+ * @see     https://github.com/WordPress/wordpress-develop/blob/6.8.1/src/wp-includes/formatting.php
  */
 function removeAccents(string $text, string $locale = ''): string
 {
@@ -884,6 +885,7 @@ function removeAccents(string $text, string $locale = ''): string
  * Determine if a string is valid UTF-8.
  *
  * @param  string $str Input string.
+ *
  * @return bool True if the string is valid UTF-8.
  */
 function seemsUtf8(string $str): bool
