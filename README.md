@@ -22,6 +22,7 @@ Simple, fast, and extension-free parser for eXeLearning project files
 - Extract text content from XML
 - Detect file version
 - Extract entire .elp file contents
+- Retrieve full metadata tree
 - No external extensions required
 - Lightweight and easy to use (less than 4 KB footprint library)
 - Compatible with PHP 8.0 to PHP 8.5
@@ -98,6 +99,12 @@ $data = $parser->toArray();
 
 // JSON serialization
 $jsonData = json_encode($parser);
+
+// Export directly to a JSON file
+$parser->exportJson('path/to/output.json');
+
+// Retrieve full metadata as array
+$meta = $parser->getMetadata();
 ```
 
 ## Error Handling

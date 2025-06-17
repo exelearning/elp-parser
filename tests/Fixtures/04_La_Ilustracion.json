@@ -1,0 +1,218 @@
+{
+
+    "metadata": [
+        {
+            "schema": "Package",
+            "content": {
+                "title": "La Ilustración",
+                "author": "Víctor Gómez Muñiz",
+                "language": "es",
+                "description": "Este recurso está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                "license": "creative commons: attribution - share alike 4.0",
+                "classification": ""
+            }
+        },
+        {
+            "schema": "Dublin core",
+            "content": {
+                "title": "La Ilustración",
+                "author": "Víctor Gómez Muñiz",
+                "language": "es",
+                "description": "Este recurso que se presenta está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                "license": {
+                    "rights": ""
+                },
+                "classification": {
+                    "source": "",
+                    "taxon_path": []
+                }
+            }
+        },
+        {
+            "schema": "LOM v1.0",
+            "content": {
+                "title": [
+                    {
+                        "text": "La Ilustración",
+                        "language": "es"
+                    }
+                ],
+                "author": [
+                    {
+                        "name": "Víctor Gómez Muñiz",
+                        "role": "author"
+                    }
+                ],
+                "language": [
+                    {
+                        "language": "es"
+                    }
+                ],
+                "description": [
+                    {
+                        "text": "Este recurso que se presenta está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                        "language": "es"
+                    },
+                    {
+                        "text": "Este recurso está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                        "language": "es"
+                    }
+                ],
+                "rights": {
+                    "copyright": "yes"
+                },
+                "classification": {
+                    "source": "",
+                    "taxon_path": []
+                }
+            }
+        },
+        {
+            "schema": "LOM-ES v1.0",
+            "content": {
+                "title": [
+                    {
+                        "text": "La Ilustración",
+                        "language": "es"
+                    }
+                ],
+                "author": "Víctor Gómez Muñiz",
+                "language": [
+                    {
+                        "language": "es"
+                    }
+                ],
+                "description": [
+                    {
+                        "text": "Este recurso que se presenta está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                        "language": "es"
+                    }
+                ],
+                "rights": {
+                    "copyright": "creative commons: attribution - share alike 4.0",
+                    "access": {
+                        "access_type": "universal",
+                        "description": "Default",
+                        "language": "en"
+                    }
+                },
+                "classification": [
+                    {
+                        "purpose": "discipline",
+                        "taxon_path": [
+                            {       
+                                "source": "arbol_curricular_LOE_2006_es",
+                                "taxon_path": [
+                                    {
+                                        "text": "Educación Secundaria Obligatoria",
+                                        "language": "es",
+                                        "id": "3"
+                                    },
+                                    {
+                                        "text": "Cuarto curso",
+                                        "language": "es",
+                                        "id": "3.4"
+                                    },
+                                    {
+                                        "text": "Ciencias Sociales, Geografía e Historia",
+                                        "language": "es",
+                                        "id": "3.4.3"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "purpose": "educational level",
+                        "taxon_path": [
+                            {
+                                "source": "nivel_educativ",
+                                "taxon_path": [
+                                    {
+                                        "text": "Educación Secundaria Obligatoria",
+                                        "language": "es",
+                                        "id": "4"
+                                    },
+                                    {
+                                        "text": "Cuarto curso",
+                                        "language": "es",
+                                        "id": "4.4"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                    
+                ]
+            }
+        }    
+    ],
+
+
+    "content": {
+        "file": "04_La_Ilustracion.elp",
+        "pages": [
+            {
+                "filename": "index.html",
+                "pagename": "La Ilustración",
+                "level": 0,
+                "idevices": [
+                    {
+                        "id": "[Si hay un id que se pueda utilizar para identificar el iDevice, se puede incluir aquí]",
+                        "type": "textIdevice",
+                        "title": "Introducción",
+                        "text": "Introducción\n\nEste recurso está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración, un movimiento cultural del siglo XVIII que pretendía acabar con la ignorancia y superstición popular a través de la razón y de la educación\n\nLas actividades contenidas en este recurso están creadas para que el alumnado consolide los conocimientos sobre los principales rasgos e ideas ilustradas, los principales pensadores ilustrados y de la Enciclopedia. Cada apartado constará de una parte teórica, como un test o un rosco interactivo, y posteriormente diversas actividades prácticas para realizar en el aula, como el Whatsapp ilustrado. Estos ejercicios tendrán su evaluación a través de una rúbrica en la que se especifica el peso de cada una de ellas.\n\nWikimedia Commons/Anicet Charles Gabriel Lemonnier. Salón de Madame Geoffrin (Dominio público)",
+                        "html_code": "<p style=\"text-align: justify;\"><span>Este recurso está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario <strong>\"El Antiguo Régimen\"</strong>. Está diseñado para tener una duración de, aproximadamente, <strong>una sesión</strong>, y el objetivo principal es mostrar ampliamente las principales características de <strong>la Ilustración,</strong> un movimiento cultural del siglo XVIII que pretendía acabar con la ignorancia y superstición popular a través de la razón y de la educación<br /></span></p><p style=\"text-align: justify;\">Las actividades contenidas en este recurso están creadas para que el alumnado consolide los conocimientos sobre los principales rasgos e ideas ilustradas, los principales pensadores ilustrados y de la Enciclopedia. Cada apartado constará de una parte teórica, como un test o un rosco interactivo, y posteriormente diversas actividades prácticas para realizar en el aula, como el <em>Whatsapp</em> ilustrado. Estos ejercicios tendrán su evaluación a través de una rúbrica en la que se especifica el peso de cada una de ellas.</p><figure class=\"exe-figure exe-image position-center license-pd\" style=\"width: 512px; text-align: center;\"><img src=\"resources/512px-Salon_de_Madame_Geoffrin.jpg\" alt=\"Salón de Madame Geoffrin\" title=\"Salón de Madame Geoffrin\" width=\"512\" height=\"337\" /><figcaption class=\"figcaption\"><a href=\"https://es.wikipedia.org/wiki/Anicet_Charles_Gabriel_Lemonnier\" target=\"_blank\" class=\"author\" rel=\"noopener\">Wikimedia Commons/Anicet Charles Gabriel Lemonnier</a>. <a href=\"https://commons.wikimedia.org/wiki/File:Salon_de_Madame_Geoffrin.jpg\" target=\"_blank\" class=\"title\" rel=\"noopener\"><em>Salón de Madame Geoffrin</em></a> <span class=\"license\"><span class=\"sep\">(</span><span>Dominio público</span><span class=\"sep\">)</span></span></figcaption></figure>"
+                    }
+                ]
+            },
+            {
+                "filename": "elementos_curriculares.html",
+                "pagename": "Elementos curriculares",
+                "level": 1,
+                "idevices": [
+                    {
+                        "id": "[Si hay un id que se pueda utilizar para identificar el iDevice, se puede incluir aquí]",
+                        "type": "textIdevice",
+                        "title": "",
+                        "text": "Objetivos\n\nEnumerar los principios clásicos de la Ilustración y asimilar su influencia en el pensamiento político. \nConocer a los principales pensadores ilustrados.\nReconocer la importancia de la Enciclopedia como obra clave de la Ilustración.\n\n\nContenidos\n\nEl pensamiento ilustrado\nLa Enciclopedia\nSociedad y economía en el Siglo de las Luces\n\n\nCriterios de Evaluación\n\nBloque 1. El siglo XVIII en Europa hasta 1789\nCriterio 1\n\nConocer el alcance de la Ilustración como nuevo movimiento cultural y social en Europa y América.\n\n\nEstándares de Aprendizaje\n\nBloque 1. El siglo XVIII en Europa hasta 1789.\nEstándar 1.1\nDistingue conceptos históricos como \"Antiguo Régimen\" e \"Ilustración\".\nEstándar 3.1\nDescribe las características de la cultura de la Ilustración y qué implicaciones tiene en algunas monarquías.\n\n\nCompetencias\n\nCompetencias sociales y cívicas. CSC.\nCompetencia para aprender a aprender. CAA.\nCompetencia digital. CD.\nCompetencia en comunicación lingüística. CCL.\n\n\nLos Criterios de Evaluación y Estándares de Aprendizaje, presentados en este recurso, se han seleccionado del Real Decreto 1105/2014, de 26 de diciembre por el que se establece el currículo básico de la Educación Secundaria Obligatoria y del Bachillerato.",
+                        "html_code": "<div class=\"exe-fx exe-tabs\"><h2 style=\"text-align: justify;\">Objetivos</h2><ul style=\"text-align: justify;\"><li>Enumerar los principios clásicos de la Ilustración y asimilar su influencia en el pensamiento político.</li><li>Conocer a los principales pensadores ilustrados.</li><li>Reconocer la importancia de la Enciclopedia como obra clave de la Ilustración.</li></ul><h2 style=\"text-align: justify;\">Contenidos</h2><ul style=\"text-align: justify;\"><li>El pensamiento ilustrado</li><li>La Enciclopedia</li><li>Sociedad y economía en el Siglo de las Luces</li></ul><h2 style=\"text-align: justify;\">Criterios de Evaluación</h2><p style=\"text-align: justify;\">Bloque 1. El siglo XVIII en Europa hasta 1789</p><ul style=\"text-align: justify;\"><li>Criterio 1</li></ul><p style=\"padding-left: 30px; text-align: justify;\">Conocer el alcance de la Ilustración como nuevo movimiento cultural y social en Europa y América.</p><h2 style=\"text-align: justify;\">Estándares de Aprendizaje</h2><p style=\"text-align: justify;\">Bloque 1. El siglo XVIII en Europa hasta 1789.</p><ul style=\"text-align: justify;\"><li>Estándar 1.1</li></ul><p style=\"padding-left: 30px; text-align: justify;\">Distingue conceptos históricos como \"Antiguo Régimen\" e \"Ilustración\".</p><ul style=\"text-align: justify;\"><li>Estándar 3.1</li></ul><p style=\"padding-left: 30px; text-align: justify;\">Describe las características de la cultura de la Ilustración y qué implicaciones tiene en algunas monarquías.</p><h2 style=\"text-align: justify;\">Competencias</h2><ul><li style=\"text-align: justify;\">Competencias sociales y cívicas. CSC.</li><li style=\"text-align: justify;\">Competencia para aprender a aprender. CAA.</li><li style=\"text-align: justify;\">Competencia digital. CD.</li><li style=\"text-align: justify;\">Competencia en comunicación lingüística. CCL.</li></ul></div><p style=\"text-align: justify;\"><span style=\"font-size: 10pt;\"><strong><em>Los Criterios de Evaluación y Estándares de Aprendizaje, presentados en este recurso, se han seleccionado del <a href=\"https://www.boe.es/eli/es/rd/2014/12/26/1105/con\" target=\"_blank\" title=\"Real Decreto 1105/2014, de 26 de diciembre por el que se establece el currículo básico de la Educación Secundaria Obligatoria y del Bachillerato. \" rel=\"noopener\">Real Decreto 1105/2014, de 26 de diciembre por el que se establece el currículo básico de la Educación Secundaria Obligatoria y del Bachillerato. </a></em></strong></span></p>"
+                    }
+                ]
+            },
+            {
+                "filename": "qu_fue_la_ilustracin.html",
+                "pagename": "¿Qué fue la Ilustración?",
+                "level": 1,
+                "idevices": [       
+                    {
+                        "id": "[Si hay un id que se pueda utilizar para identificar el iDevice, se puede incluir aquí]",
+                        "type": "textIdevice",
+                        "title": "La Ilustración",
+                        "text": "La Ilustración fue un movimiento de carácter intelectual que tuvo lugar en Europa a lo largo del XVIII, denominado Siglo de las Luces. Los ilustrados pusieron en cuestión todos los principios del Antiguo Régimen, al tiempo que defendían la fe absoluta en la razón, es decir, la inteligencia humana como el único medio de poder entender el mundo. De esta manera, se debía rechazar aquello que no pudiera ser demostrado mediante el uso de la razón o por la experiencia, que no podían ser sustituidas en ningún caso por la tradición, la autoridad o las verdades sagradas. Aunque la Ilustración tuvo su epicentro en Francia, los precedentes de este movimiento los encontramos en Inglaterra, en pensadores como Isaac Newton y John Locke.\nLos ilustrados consideraban como último objetivo de la vida la felicidad, y creían que la humanidad podría alcanzar esa meta a través de la inteligencia y el conocimiento. Para ello, eran necesarios la educación y el progreso, todo ello, para conseguir una paulatina mejora de las condiciones de vida de la sociedad.\nEl pensamiento ilustrado criticaba la intransigencia religiosa, pues consideraba que la tolerancia debía ser la base de las relaciones humanas. Si bien es cierto que la mayoría de los ilustrados eran creyentes, negaban la superioridad de una sola religión sobre las demás. Incluso, llegaron a proponer el establecimiento de unos códigos morales cuya base fuera la razón.\nWikimedia Commons/Adolph von Menzel. Voltaire en una cena en el castillo de Sans-Souci (Dominio público)",
+                        "html_code": "<p style=\"text-align: justify;\">La Ilustración fue un movimiento de carácter intelectual que tuvo lugar en Europa a lo largo del XVIII, denominado <strong>Siglo de las Luces</strong>. Los ilustrados pusieron en cuestión todos los principios del Antiguo Régimen, al tiempo que defendían la <strong>fe absoluta en la razón, </strong>es decir, la inteligencia humana como el único medio de poder entender el mundo. De esta manera, se debía rechazar aquello que no pudiera ser demostrado mediante el uso de la razón o por la experiencia, que no podían ser sustituidas en ningún caso por la tradición, la autoridad o las verdades sagradas. Aunque la Ilustración tuvo su epicentro en Francia, los precedentes de este movimiento los encontramos en Inglaterra, en pensadores como Isaac Newton y John Locke.</p><p style=\"text-align: justify;\">Los ilustrados consideraban como último objetivo de la vida la felicidad, y creían que la humanidad podría alcanzar esa meta a través de la <strong>inteligencia</strong> y el <strong>conocimiento.</strong> Para ello, eran necesarios la <strong>educación</strong> y el <strong>progreso,</strong> todo ello, para conseguir una paulatina mejora de las condiciones de vida de la sociedad.  </p><p style=\"text-align: justify;\">El pensamiento ilustrado criticaba la intransigencia religiosa, pues consideraba que la tolerancia debía ser la base de las relaciones humanas. Si bien es cierto que la mayoría de los ilustrados eran creyentes, negaban la superioridad de una sola religión sobre las demás. Incluso, llegaron a proponer el establecimiento de unos códigos morales cuya base fuera la razón.</p><figure class=\"exe-figure exe-image position-center license-pd\" style=\"width: 580px; text-align: center;\"><img src=\"resources/Adolph-von-Menzel-Tafelrunde2.jpeg\" alt=\"Voltaire en una cena en el castillo de Sans-Souci de Adolph von Menzel\" title=\"Voltaire en una cena en el castillo de Sans-Souci \" width=\"580\" height=\"699\" /><figcaption class=\"figcaption\"><a href=\"https://es.wikipedia.org/wiki/Adolph_von_Menzel\" target=\"_blank\" class=\"author\" rel=\"noopener\">Wikimedia Commons/Adolph von Menzel</a>. <a href=\"https://commons.wikimedia.org/wiki/File:Adolph-von-Menzel-Tafelrunde.jpg\" target=\"_blank\" class=\"title\" rel=\"noopener\"><em>Voltaire en una cena en el castillo de Sans-Souci</em></a> <span class=\"license\"><span class=\"sep\">(</span><span>Dominio público</span><span class=\"sep\">)</span></span></figcaption></figure>"
+                    },
+                    {
+                        "id": "[Si hay un id que se pueda utilizar para identificar el iDevice, se puede incluir aquí]",
+                        "type": "textIdevice",
+                        "title": "Ideas de la Ilustración",
+                        "text": "Los principales rasgos que caracterizaron a la Ilustración fueron los siguientes:\nLa superioridad de la razón por encima de todo. El conocimiento era la herramienta para el progreso, y todos los pensamientos ilustrados estaban auspiciados y protegidos por la razón.   \nEl conocimiento y el progreso hacían que la vida mejorara; por ello, uno de los principales rasgos de la Ilustración era el optimismo. El ilustrado era un pensador progresista y ilusionante, pues creía en un futuro mejor. La felicidad era el gran valor que debía tener la vida del ser humano. \nLa educación era el arma principal para llegar al progreso, y la lucha contra la ignorancia estaba asociada a la libertad. Por ello, en la Ilustración se comenzó una recopilación del conocimiento, y, posteriormente, de su divulgación a través de la Enciclopedia. \nLa Ilustración defendía la confianza en los monarcas, que a través de sus reformas, podrían hacer progresar a la sociedad. El optimismo ilustrado devenía en un optimismo en los gobernantes y el reformismo. \nLa secularización de la cultura, alejando la educación de las manos eclesiásticas. El pensamiento ilustrado cuestionaba todo aquello que no estuviera científicamente respaldado. Por eso, en ciertos aspectos, la Iglesia perdía algo de poder frente al Estado.  \nLa Ilustración planteaba que la naturaleza era buena y pura. Su estudio y diversos experimentos científicos permitieron ir explicando las leyes de la naturaleza. El pensamiento ilustrado era naturalista y antropocéntrico, pues se volvía a considerar al hombre como el centro de todo, con su capacidad de razonar y de pensar de manera crítica. ",
+                        "html_code": "<p style=\"text-align: justify;\">Los principales rasgos que caracterizaron a la Ilustración fueron los siguientes:</p><ul><li style=\"text-align: justify;\">La superioridad de la <strong>razón</strong> por encima de todo. El <strong>conocimiento</strong> era la herramienta para el progreso, y todos los pensamientos ilustrados estaban auspiciados y protegidos por la razón.  </li><li style=\"text-align: justify;\">El conocimiento y el progreso hacían que la vida mejorara; por ello, uno de los principales rasgos de la Ilustración era el <strong>optimismo</strong>. El ilustrado era un pensador progresista y ilusionante, pues creía en un futuro mejor. La <strong>felicidad</strong> era el gran valor que debía tener la vida del ser humano.</li><li style=\"text-align: justify;\">La <strong>educación</strong> era el arma principal para llegar al progreso, y la lucha contra la ignorancia estaba asociada a la libertad. Por ello, en la Ilustración se comenzó una recopilación del conocimiento, y, posteriormente, de su divulgación a través de la <strong>Enciclopedia</strong>.</li><li style=\"text-align: justify;\">La Ilustración defendía la confianza en los monarcas, que a través de sus reformas, podrían hacer progresar a la sociedad. El optimismo ilustrado devenía en un optimismo en los gobernantes y el <strong>reformismo</strong>.</li><li style=\"text-align: justify;\">La <strong>secularización</strong> de la cultura, alejando la educación de las manos eclesiásticas. El pensamiento ilustrado cuestionaba todo aquello que no estuviera científicamente respaldado. Por eso, en ciertos aspectos, la Iglesia perdía algo de poder frente al Estado. </li><li style=\"text-align: justify;\">La Ilustración planteaba que la naturaleza era buena y pura. Su estudio y diversos experimentos científicos permitieron ir explicando las leyes de la naturaleza. El pensamiento ilustrado era <strong>naturalista y antropocéntrico</strong>, pues se volvía a considerar al hombre como el centro de todo, con su capacidad de razonar y de pensar de manera crítica. </li></ul>"
+                    },  
+                    {
+                        "id": "[Si hay un id que se pueda utilizar para identificar el iDevice, se puede incluir aquí]",
+                        "type": "ClozeIdevice",
+                        "title": "¿Sabes qué palabras faltan?",
+                        "instructions": {
+                            "text": "Completa el siguiente texto con las palabras que faltan",
+                            "html_code": "<p>Completa el siguiente texto con las palabras que faltan</p>"
+                        },
+                        "cloze_text": [
+							// ToDo
+						]
+                    }   
+                ]  
+            }
+        ]
+    }
+}

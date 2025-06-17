@@ -108,6 +108,55 @@ it(
 );
 
 it(
+    'can export JSON data from an ELP file',
+    function () {
+        $elpFile = __DIR__ . '/../Fixtures/04_La_Ilustracion.elp';
+
+        expect(file_exists($elpFile))->toBeTrue('Example ELP file not found');
+
+        $parser = ELPParser::fromFile($elpFile);
+
+        $json = $parser->exportJson();
+        $data = json_decode($json, true);
+
+        expect($data)->toBeArray();
+        expect($data['title'])->toBe('La Ilustración');
+
+        $expected = json_decode(
+            file_get_contents(__DIR__ . '/../Fixtures/04_La_Ilustracion.expected.json'),
+            true
+        );
+        expect($data)->toEqual($expected);
+
+        $temp = tempnam(sys_get_temp_dir(), 'elp') . '.json';
+        $parser->exportJson($temp);
+        expect(file_exists($temp))->toBeTrue();
+        $fileData = json_decode(file_get_contents($temp), true);
+        expect($fileData)->toEqual($expected);
+        unlink($temp);
+    }
+);
+
+it(
+    'can retrieve full metadata information',
+    function () {
+        $elpFile = __DIR__ . '/../Fixtures/04_La_Ilustracion.elp';
+
+        expect(file_exists($elpFile))->toBeTrue('Example ELP file not found');
+
+        $parser = ELPParser::fromFile($elpFile);
+
+        $meta = $parser->getMetadata();
+        $expected = json_decode(
+            file_get_contents(__DIR__ . '/../Fixtures/04_La_Ilustracion.metadata.expected.json'),
+            true
+        );
+
+        expect($meta)->toEqual($expected);
+    }
+);
+
+it(
     'can extract an ELP file using a temporary directory', function () {
         $elpFile = __DIR__ . '/../Fixtures/exe2-ipe1_parada3.elp';
     
