@@ -542,7 +542,7 @@ class ELPParser implements \JsonSerializable
         $meta = [
             [
                 'schema' => 'Package',
-                'content' => [
+                'content' => [ 
                     'title' => $data['_title'] ?? '',
                     'lang' => $data['_lang'] ?? '',
                     'description' => [
