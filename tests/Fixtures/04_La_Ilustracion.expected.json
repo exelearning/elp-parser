@@ -1,10 +1,868 @@
 {
-    "version": 2,
-    "title": "La Ilustración",
-    "description": "Este recurso está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
-    "author": "Víctor Gómez Muñiz",
-    "license": "creative commons: attribution - share alike 4.0",
-    "language": "es",
-    "learningResourceType": "",
-    "strings": []
+    "metadata": [
+        {
+            "schema": "Package",
+            "content": {
+                "title": "La Ilustración",
+                "lang": "es",
+                "description": {
+                    "general_description": "Este recurso está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                    "objectives": "",
+                    "preknowledge": ""
+                },
+                "author": "Víctor Gómez Muñiz",
+                "license": "creative commons: attribution - share alike 4.0",
+                "learningResourceType": "",
+                "usage": {
+                    "intendedEndUserRoleType": "learner",
+                    "intendedEndUserRoleGroup": false,
+                    "intendedEndUserRoleTutor": false,
+                    "contextPlace": "classroom",
+                    "contextMode": "presencial"
+                },
+                "project_properties": {
+                    "backgroundImg": "",
+                    "backgroundImgTile": false,
+                    "footer": ""
+                },
+                "format": {
+                    "Doctype": "HTML5"
+                },
+                "taxonomy": {
+                    "level_1": "Tema",
+                    "level_2": "Sección",
+                    "level_3": "Unidad"
+                },
+                "advanced_options": {
+                    "custom_head": ""
+                }
+            }
+        },
+        {
+            "schema": "Dublin core",
+            "content": {
+                "contributors": "",
+                "coverage": "",
+                "creator": "Victor Gómez Muñiz",
+                "date": "2021-06-22",
+                "description": "Este recurso que se presenta está dirigido al alumnado de 4º de ESO y se inserta dentro del itinerario \"El Antiguo Régimen\". Está diseñado para tener una duración de, aproximadamente, una sesión, y el objetivo principal es mostrar ampliamente las principales características de la Ilustración.",
+                "format": "",
+                "identifier": "4a7d755e-34a5-410a-a7d4-601881136623",
+                "language": "es",
+                "publisher": "",
+                "relation": "",
+                "rights": "",
+                "source": "",
+                "subject": "",
+                "title": "La Ilustración",
+                "type": ""
+            }
+        },
+        {
+            "schema": "LOM v1.0",
+            "content": {
+                "__index__": [],
+                "__oldchild__": null,
+                "annotation": [],
+                "classification": [],
+                "educational": [
+                    {
+                        "cognitiveProcess": [],
+                        "context": [
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOMv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "other"
+                                }
+                            },
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOMv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "school"
+                                }
+                            }
+                        ],
+                        "description": [],
+                        "difficulty": null,
+                        "intendedEndUserRole": [
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOMv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "learner"
+                                }
+                            }
+                        ],
+                        "interactivityLevel": null,
+                        "interactivityType": null,
+                        "language": [
+                            {
+                                "extensiontype_": null,
+                                "valueOf_": "es"
+                            }
+                        ],
+                        "learningResourceType": [
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOMv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "experiment"
+                                }
+                            }
+                        ],
+                        "semanticDensity": null,
+                        "typicalAgeRange": [],
+                        "typicalLearningTime": null
+                    }
+                ],
+                "general": {
+                    "aggregationLevel": {
+                        "extensiontype_": null,
+                        "source": {
+                            "extensiontype_": null,
+                            "string": [],
+                            "uniqueElementName": "source",
+                            "valueOf_": "LOMv1.0"
+                        },
+                        "uniqueElementName": "aggregationLevel",
+                        "value": {
+                            "extensiontype_": null,
+                            "source": null,
+                            "uniqueElementName": "value",
+                            "value": null,
+                            "valueOf_": "2"
+                        }
+                    },
+                    "coverage": [],
+                    "description": [
+                        {
+                            "extensiontype_": null,
+                            "string": [
+                                {
+                                    "language": "es",
+                                    "valueOf_": "Este recurso que se presenta est\\xc3\\xa1 dirigido al alumnado de 4\\xc2\\xba de ESO y se inserta dentro del itinerario \\\"El Antiguo R\\xc3\\xa9gimen\\\". Est\\xc3\\xa1 dise\\xc3\\xb1ado para tener una duraci\\xc3\\xb3n de, aproximadamente, una sesi\\xc3\\xb3n, y el objetivo principal es mostrar ampliamente las principales caracter\\xc3\\xadsticas de la Ilustraci\\xc3\\xb3n."
+                                }
+                            ]
+                        },
+                        {
+                            "extensiontype_": null,
+                            "string": [
+                                {
+                                    "language": "es",
+                                    "valueOf_": "Este recurso est\\xc3\\xa1 dirigido al alumnado de 4\\xc2\\xba de ESO y se inserta dentro del itinerario \\\"El Antiguo R\\xc3\\xa9gimen\\\". Est\\xc3\\xa1 dise\\xc3\\xb1ado para tener una duraci\\xc3\\xb3n de, aproximadamente, una sesi\\xc3\\xb3n, y el objetivo principal es mostrar ampliamente las principales caracter\\xc3\\xadsticas de la Ilustraci\\xc3\\xb3n."
+                                }
+                            ]
+                        }
+                    ],
+                    "identifier": [
+                        {
+                            "catalog": {
+                                "uniqueElementName": "catalog",
+                                "valueOf_": "My Catalog"
+                            },
+                            "entry": {
+                                "uniqueElementName": "entry",
+                                "valueOf_": "4a7d755e-34a5-410a-a7d4-601881136623"
+                            }
+                        }
+                    ],
+                    "keyword": [],
+                    "language": [
+                        {
+                            "extensiontype_": null,
+                            "valueOf_": "es"
+                        }
+                    ],
+                    "structure": null,
+                    "title": {
+                        "extensiontype_": null,
+                        "string": [
+                            {
+                                "language": "es",
+                                "valueOf_": "La Ilustraci\\xc3\\xb3n"
+                            }
+                        ],
+                        "uniqueElementName": "title"
+                    },
+                    "uniqueElementName": "general"
+                },
+                "lifeCycle": {
+                    "contribute": [
+                        {
+                            "date": {
+                                "dateTime": {
+                                    "uniqueElementName": "dateTime",
+                                    "valueOf_": "2021-06-21T09:07:36.00+02:00"
+                                },
+                                "description": {
+                                    "extensiontype_": null,
+                                    "string": [
+                                        {
+                                            "language": "es",
+                                            "valueOf_": "Fecha de creaci\\xc3\\xb3n de los metadatos"
+                                        }
+                                    ]
+                                },
+                                "extensiontype_": null,
+                                "uniqueElementName": "date",
+                                "valueOf_": null
+                            },
+                            "entity": [
+                                {
+                                    "extensiontype_": null,
+                                    "valueOf_": "BEGIN:VCARD VERSION:3.0 FN:V\\xc3\\xadctor G\\xc3\\xb3mez Mu\\xc3\\xb1iz EMAIL;TYPE=INTERNET: ORG: END:VCARD"
+                                }
+                            ],
+                            "role": {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOMv1.0"
+                                },
+                                "uniqueElementName": "role",
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "author"
+                                }
+                            }
+                        }
+                    ],
+                    "status": null,
+                    "uniqueElementName": "lifeCycle",
+                    "version": null
+                },
+                "metaMetadata": {
+                    "contribute": [
+                        {
+                            "date": {
+                                "dateTime": {
+                                    "uniqueElementName": "dateTime",
+                                    "valueOf_": "2021-06-21T09:07:36.00+02:00"
+                                },
+                                "description": {
+                                    "extensiontype_": null,
+                                    "string": [
+                                        {
+                                            "language": "es",
+                                            "valueOf_": "Fecha de creaci\\xc3\\xb3n de los metadatos"
+                                        }
+                                    ]
+                                },
+                                "extensiontype_": null,
+                                "uniqueElementName": "date",
+                                "valueOf_": null
+                            },
+                            "entity": [
+                                {
+                                    "extensiontype_": null,
+                                    "valueOf_": "BEGIN:VCARD VERSION:3.0 FN:V\\xc3\\xadctor G\\xc3\\xb3mez Mu\\xc3\\xb1iz EMAIL;TYPE=INTERNET: ORG: END:VCARD"
+                                }
+                            ],
+                            "role": {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOMv1.0"
+                                },
+                                "uniqueElementName": "role",
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "creator"
+                                }
+                            }
+                        }
+                    ],
+                    "identifier": [],
+                    "language": {
+                        "extensiontype_": null,
+                        "valueOf_": "es"
+                    },
+                    "metadataSchema": [
+                        {
+                            "valueOf_": "LOMv1.0"
+                        }
+                    ],
+                    "uniqueElementName": "metaMetadata"
+                },
+                "relation": [],
+                "rights": {
+                    "access": null,
+                    "copyrightAndOtherRestrictions": {
+                        "extensiontype_": null,
+                        "source": {
+                            "extensiontype_": null,
+                            "string": [],
+                            "uniqueElementName": "source",
+                            "valueOf_": "LOMv1.0"
+                        },
+                        "uniqueElementName": "copyrightAndOtherRestrictions",
+                        "value": {
+                            "extensiontype_": null,
+                            "source": null,
+                            "uniqueElementName": "value",
+                            "value": null,
+                            "valueOf_": "yes"
+                        }
+                    },
+                    "cost": null,
+                    "description": null,
+                    "uniqueElementName": "rights"
+                },
+                "technical": null
+            }
+        },
+        {
+            "schema": "LOM-ES v1.0",
+            "content": {
+                "__index__": [],
+                "__oldchild__": null,
+                "annotation": [],
+                "classification": [
+                    {
+                        "description": null,
+                        "keyword": [],
+                        "purpose": {
+                            "extensiontype_": null,
+                            "source": {
+                                "extensiontype_": null,
+                                "string": [],
+                                "uniqueElementName": "source",
+                                "valueOf_": "LOM-ESv1.0"
+                            },
+                            "uniqueElementName": "purpose",
+                            "value": {
+                                "extensiontype_": null,
+                                "source": null,
+                                "uniqueElementName": "value",
+                                "value": null,
+                                "valueOf_": "discipline"
+                            }
+                        },
+                        "taxonPath": [
+                            {
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [
+                                        {
+                                            "language": "es",
+                                            "valueOf_": "\\xc3\\x81rbol curricular LOE 2006"
+                                        }
+                                    ],
+                                    "uniqueElementName": "source"
+                                },
+                                "taxon": [
+                                    {
+                                        "entry": {
+                                            "extensiontype_": null,
+                                            "string": [
+                                                {
+                                                    "language": "es",
+                                                    "valueOf_": "Educaci\\xc3\\xb3n Secundaria Obligatoria"
+                                                }
+                                            ],
+                                            "uniqueElementName": "entry"
+                                        },
+                                        "id": {
+                                            "uniqueElementName": "id",
+                                            "valueOf_": "3"
+                                        }
+                                    },
+                                    {
+                                        "entry": {
+                                            "extensiontype_": null,
+                                            "string": [
+                                                {
+                                                    "language": "es",
+                                                    "valueOf_": "Cuarto curso"
+                                                }
+                                            ],
+                                            "uniqueElementName": "entry"
+                                        },
+                                        "id": {
+                                            "uniqueElementName": "id",
+                                            "valueOf_": "3.4"
+                                        }
+                                    },
+                                    {
+                                        "entry": {
+                                            "extensiontype_": null,
+                                            "string": [
+                                                {
+                                                    "language": "es",
+                                                    "valueOf_": "Ciencias Sociales, Geograf\\xc3\\xada e Historia"
+                                                }
+                                            ],
+                                            "uniqueElementName": "entry"
+                                        },
+                                        "id": {
+                                            "uniqueElementName": "id",
+                                            "valueOf_": "3.4.3"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "description": null,
+                        "keyword": [],
+                        "purpose": {
+                            "extensiontype_": null,
+                            "source": {
+                                "extensiontype_": null,
+                                "string": [],
+                                "uniqueElementName": "source",
+                                "valueOf_": "LOM-ESv1.0"
+                            },
+                            "uniqueElementName": "purpose",
+                            "value": {
+                                "extensiontype_": null,
+                                "source": null,
+                                "uniqueElementName": "value",
+                                "value": null,
+                                "valueOf_": "educational level"
+                            }
+                        },
+                        "taxonPath": [
+                            {
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [
+                                        {
+                                            "language": "es",
+                                            "valueOf_": "nivel_educativ"
+                                        }
+                                    ],
+                                    "uniqueElementName": "source"
+                                },
+                                "taxon": [
+                                    {
+                                        "entry": {
+                                            "extensiontype_": null,
+                                            "string": [
+                                                {
+                                                    "language": "es",
+                                                    "valueOf_": "Educaci\\xc3\\xb3n Secundaria Obligatoria"
+                                                }
+                                            ],
+                                            "uniqueElementName": "entry"
+                                        },
+                                        "id": {
+                                            "uniqueElementName": "id",
+                                            "valueOf_": "4"
+                                        }
+                                    },
+                                    {
+                                        "entry": {
+                                            "extensiontype_": null,
+                                            "string": [
+                                                {
+                                                    "language": "es",
+                                                    "valueOf_": "Cuarto curso"
+                                                }
+                                            ],
+                                            "uniqueElementName": "entry"
+                                        },
+                                        "id": {
+                                            "uniqueElementName": "id",
+                                            "valueOf_": "4.4"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "educational": [
+                    {
+                        "cognitiveProcess": [],
+                        "context": [
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOM-ESv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "presencial"
+                                }
+                            },
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOM-ESv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "classroom"
+                                }
+                            }
+                        ],
+                        "description": [],
+                        "difficulty": null,
+                        "intendedEndUserRole": [
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOM-ESv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "learner"
+                                }
+                            }
+                        ],
+                        "interactivityLevel": null,
+                        "interactivityType": null,
+                        "language": [
+                            {
+                                "extensiontype_": null,
+                                "valueOf_": "es"
+                            }
+                        ],
+                        "learningResourceType": [
+                            {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOM-ESv1.0"
+                                },
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "multimedia presentation"
+                                }
+                            }
+                        ],
+                        "semanticDensity": null,
+                        "typicalAgeRange": [],
+                        "typicalLearningTime": null
+                    }
+                ],
+                "general": {
+                    "aggregationLevel": {
+                        "extensiontype_": null,
+                        "source": {
+                            "extensiontype_": null,
+                            "string": [],
+                            "uniqueElementName": "source",
+                            "valueOf_": "LOM-ESv1.0"
+                        },
+                        "uniqueElementName": "aggregationLevel",
+                        "value": {
+                            "extensiontype_": null,
+                            "source": null,
+                            "uniqueElementName": "value",
+                            "value": null,
+                            "valueOf_": "2"
+                        }
+                    },
+                    "coverage": [],
+                    "description": [
+                        {
+                            "extensiontype_": null,
+                            "string": [
+                                {
+                                    "language": "es",
+                                    "valueOf_": "Este recurso que se presenta est\\xc3\\xa1 dirigido al alumnado de 4\\xc2\\xba de ESO y se inserta dentro del itinerario \\\"El Antiguo R\\xc3\\xa9gimen\\\". Est\\xc3\\xa1 dise\\xc3\\xb1ado para tener una duraci\\xc3\\xb3n de, aproximadamente, una sesi\\xc3\\xb3n, y el objetivo principal es mostrar ampliamente las principales caracter\\xc3\\xadsticas de la Ilustraci\\xc3\\xb3n."
+                                }
+                            ]
+                        }
+                    ],
+                    "identifier": [
+                        {
+                            "catalog": {
+                                "uniqueElementName": "catalog",
+                                "valueOf_": "My Catalog"
+                            },
+                            "entry": {
+                                "uniqueElementName": "entry",
+                                "valueOf_": "4a7d755e-34a5-410a-a7d4-601881136623"
+                            }
+                        },
+                        {
+                            "catalog": {
+                                "uniqueElementName": "catalog",
+                                "valueOf_": "meducaci\\xc3\\xb3n_agrega"
+                            },
+                            "entry": {
+                                "uniqueElementName": "entry",
+                                "valueOf_": "216_20210629_000_0011_0090"
+                            }
+                        },
+                        {
+                            "catalog": {
+                                "uniqueElementName": "catalog",
+                                "valueOf_": "Cat\\xc3\\xa1logo unificado mec-re.es-ccaa de identificaci\\xc3\\xb3n de ODE"
+                            },
+                            "entry": {
+                                "uniqueElementName": "entry",
+                                "valueOf_": "es_2021062912_0110090"
+                            }
+                        }
+                    ],
+                    "keyword": [
+                        {
+                            "extensiontype_": null,
+                            "string": [
+                                {
+                                    "language": "es",
+                                    "valueOf_": "Itinerarios Did\\xc3\\xa1cticos"
+                                }
+                            ]
+                        }
+                    ],
+                    "language": [
+                        {
+                            "extensiontype_": null,
+                            "valueOf_": "es"
+                        }
+                    ],
+                    "structure": null,
+                    "title": {
+                        "extensiontype_": null,
+                        "string": [
+                            {
+                                "language": "es",
+                                "valueOf_": "La Ilustraci\\xc3\\xb3n"
+                            }
+                        ],
+                        "uniqueElementName": "title"
+                    },
+                    "uniqueElementName": "general"
+                },
+                "lifeCycle": {
+                    "contribute": [
+                        {
+                            "date": {
+                                "dateTime": {
+                                    "uniqueElementName": "dateTime",
+                                    "valueOf_": "2021-06-21T09:07:36.00+02:00"
+                                },
+                                "description": {
+                                    "extensiontype_": null,
+                                    "string": [
+                                        {
+                                            "language": "es",
+                                            "valueOf_": "Fecha de creaci\\xc3\\xb3n de los metadatos"
+                                        }
+                                    ]
+                                },
+                                "extensiontype_": null,
+                                "uniqueElementName": "date",
+                                "valueOf_": null
+                            },
+                            "entity": [
+                                {
+                                    "extensiontype_": null,
+                                    "valueOf_": "BEGIN:VCARD VERSION:3.0 FN:V\\xc3\\xadctor G\\xc3\\xb3mez Mu\\xc3\\xb1iz EMAIL;TYPE=INTERNET: ORG: END:VCARD"
+                                }
+                            ],
+                            "role": {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOM-ESv1.0"
+                                },
+                                "uniqueElementName": "role",
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "author"
+                                }
+                            }
+                        }
+                    ],
+                    "status": null,
+                    "uniqueElementName": "lifeCycle",
+                    "version": null
+                },
+                "metaMetadata": {
+                    "contribute": [
+                        {
+                            "date": {
+                                "dateTime": {
+                                    "uniqueElementName": "dateTime",
+                                    "valueOf_": "2021-06-21T09:07:36.00+02:00"
+                                },
+                                "description": {
+                                    "extensiontype_": null,
+                                    "string": [
+                                        {
+                                            "language": "es",
+                                            "valueOf_": "Fecha de creaci\\xc3\\xb3n de los metadatos"
+                                        }
+                                    ]
+                                },
+                                "extensiontype_": null,
+                                "uniqueElementName": "date",
+                                "valueOf_": null
+                            },
+                            "entity": [
+                                {
+                                    "extensiontype_": null,
+                                    "valueOf_": "BEGIN:VCARD VERSION:3.0 FN:V\\xc3\\xadctor G\\xc3\\xb3mez Mu\\xc3\\xb1iz EMAIL;TYPE=INTERNET: ORG: END:VCARD"
+                                }
+                            ],
+                            "role": {
+                                "extensiontype_": null,
+                                "source": {
+                                    "extensiontype_": null,
+                                    "string": [],
+                                    "uniqueElementName": "source",
+                                    "valueOf_": "LOM-ESv1.0"
+                                },
+                                "uniqueElementName": "role",
+                                "value": {
+                                    "extensiontype_": null,
+                                    "source": null,
+                                    "uniqueElementName": "value",
+                                    "value": null,
+                                    "valueOf_": "creator"
+                                }
+                            }
+                        }
+                    ],
+                    "identifier": [],
+                    "language": {
+                        "extensiontype_": null,
+                        "valueOf_": "es"
+                    },
+                    "metadataSchema": [
+                        {
+                            "valueOf_": "LOM-ESv1.0"
+                        }
+                    ],
+                    "uniqueElementName": "metaMetadata"
+                },
+                "relation": [],
+                "rights": {
+                    "access": {
+                        "accessType": {
+                            "extensiontype_": null,
+                            "source": {
+                                "extensiontype_": null,
+                                "string": [],
+                                "uniqueElementName": "source",
+                                "valueOf_": "LOM-ESv1.0"
+                            },
+                            "uniqueElementName": "accessType",
+                            "value": {
+                                "extensiontype_": null,
+                                "source": null,
+                                "uniqueElementName": "value",
+                                "value": null,
+                                "valueOf_": "universal"
+                            }
+                        },
+                        "description": {
+                            "extensiontype_": null,
+                            "string": [
+                                {
+                                    "language": "en",
+                                    "valueOf_": "Default"
+                                }
+                            ]
+                        },
+                        "uniqueElementName": "access"
+                    },
+                    "copyrightAndOtherRestrictions": {
+                        "extensiontype_": null,
+                        "source": {
+                            "extensiontype_": null,
+                            "string": [],
+                            "uniqueElementName": "source",
+                            "valueOf_": "LOM-ESv1.0"
+                        },
+                        "uniqueElementName": "copyrightAndOtherRestrictions",
+                        "value": {
+                            "extensiontype_": null,
+                            "source": null,
+                            "uniqueElementName": "value",
+                            "value": null,
+                            "valueOf_": "creative commons: attribution - share alike"
+                        }
+                    },
+                    "cost": null,
+                    "description": null,
+                    "uniqueElementName": "rights"
+                },
+                "technical": null
+            }
+        }
+    ]
 }
