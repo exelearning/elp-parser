@@ -544,11 +544,38 @@ class ELPParser implements \JsonSerializable
                 'schema' => 'Package',
                 'content' => [
                     'title' => $data['_title'] ?? '',
+                    'lang' => $data['_lang'] ?? '',
+                    'description' => [
+                        'general_description' => $data['_description'] ?? '',
+                        'objectives' => $data['_objectives'] ?? '',
+                        'preknowledge' => $data['_preknowledge'] ?? ''
+                    ],
                     'author' => $data['_author'] ?? '',
-                    'language' => $data['_lang'] ?? '',
-                    'description' => $data['_description'] ?? '',
                     'license' => $data['license'] ?? '',
-                    'classification' => '',
+                    'learningResourceType' => $data['_learningResourceType'] ?? '',
+                    'usage' => [
+                        'intendedEndUserRoleType' => $data['_intendedEndUserRoleType'] ?? '',
+                        'intendedEndUserRoleGroup' => $data['_intendedEndUserRoleGroup'] ?? '',
+                        'intendedEndUserRoleTutor' => $data['_intendedEndUserRoleTutor'] ?? '',
+                        'contextPlace' => $data['_contextPlace'] ?? '',
+                        'contextMode' => $data['_contextMode'] ?? '',
+                    ],
+                    'project_properties' => [
+                        'backgroundImg' => $data['_backgroundImg'] ?? '',
+                        'backgroundImgTile' => $data['backgroundImgTile'] ?? '',
+                        'footer' => $data['footer'] ?? '',
+                    ],
+                    'format' => [
+                        'Doctype' => $data['_docType'] ?? '',
+                    ],
+                    'taxonomy' => [
+                        'level_1' => $data['_levelNames'][0] ?? '',
+                        'level_2' => $data['_levelNames'][1] ?? '',
+                        'level_3' => $data['_levelNames'][2] ?? '',
+                    ],
+                    'advanced_options' => [
+                        'custom_head' => $data['_extraHeadContent'] ?? ''
+                    ]
                 ],
             ],
         ];
