@@ -542,73 +542,67 @@ class ELPParser implements \JsonSerializable
         $meta = [
             [
                 'schema' => 'Package',
-                'content' => [
+                'content' => [ 
                     'title' => $data['_title'] ?? '',
+                    'lang' => $data['_lang'] ?? '',
+                    'description' => [
+                        'general_description' => $data['_description'] ?? '',
+                        'objectives' => $data['_objectives'] ?? '',
+                        'preknowledge' => $data['_preknowledge'] ?? ''
+                    ],
                     'author' => $data['_author'] ?? '',
-                    'language' => $data['_lang'] ?? '',
-                    'description' => $data['_description'] ?? '',
                     'license' => $data['license'] ?? '',
-                    'classification' => '',
+                    'learningResourceType' => $data['_learningResourceType'] ?? '',
+                    'usage' => [
+                        'intendedEndUserRoleType' => $data['_intendedEndUserRoleType'] ?? '',
+                        'intendedEndUserRoleGroup' => $data['_intendedEndUserRoleGroup'] ?? '',
+                        'intendedEndUserRoleTutor' => $data['_intendedEndUserRoleTutor'] ?? '',
+                        'contextPlace' => $data['_contextPlace'] ?? '',
+                        'contextMode' => $data['_contextMode'] ?? '',
+                    ],
+                    'project_properties' => [
+                        'backgroundImg' => $data['_backgroundImg'] ?? '',
+                        'backgroundImgTile' => $data['backgroundImgTile'] ?? '',
+                        'footer' => $data['footer'] ?? '',
+                    ],
+                    'format' => [
+                        'Doctype' => $data['_docType'] ?? '',
+                    ],
+                    'taxonomy' => [
+                        'level_1' => $data['_levelNames'][0] ?? '',
+                        'level_2' => $data['_levelNames'][1] ?? '',
+                        'level_3' => $data['_levelNames'][2] ?? '',
+                    ],
+                    'advanced_options' => [
+                        'custom_head' => $data['_extraHeadContent'] ?? ''
+                    ]
                 ],
             ],
         ];
 
         if (isset($data['dublinCore'])) {
-            $dc = $data['dublinCore'];
             $meta[] = [
                 'schema' => 'Dublin core',
-                'content' => [
-                    'title' => $dc['title'] ?? '',
-                    'author' => $dc['creator'] ?? '',
-                    'language' => $dc['language'] ?? '',
-                    'description' => $dc['description'] ?? '',
-                    'license' => [ 'rights' => $dc['rights'] ?? '' ],
-                    'classification' => [ 'source' => $dc['source'] ?? '', 'taxon_path' => [] ],
-                ],
+                'content' => $data['dublinCore'] ?? [],
             ];
         }
 
         if (isset($data['lom'])) {
-            $lom = $data['lom'];
             $meta[] = [
                 'schema' => 'LOM v1.0',
-                'content' => [
-                    'title' => $lom['general']['title']['string'] ?? [],
-                    'author' => $lom['lifeCycle']['contribute']['entity'] ?? [],
-                    'language' => $lom['general']['language'] ?? [],
-                    'description' => $lom['general']['description'] ?? [],
-                    'rights' => $lom['rights'] ?? [],
-                    'classification' => $lom['classification'] ?? [],
-                ],
+                'content' => $data['lom'] ?? [],
             ];
         }
 
         if (isset($data['lomEs'])) {
-            $lomEs = $data['lomEs'];
             $meta[] = [
                 'schema' => 'LOM-ES v1.0',
-                'content' => [
-                    'title' => $lomEs['general']['title']['string'] ?? [],
-                    'author' => $lomEs['lifeCycle']['contribute']['entity']['name'] ?? ($lomEs['lifeCycle']['contribute']['entity'] ?? ''),
-                    'language' => $lomEs['general']['language'] ?? [],
-                    'description' => $lomEs['general']['description'] ?? [],
-                    'rights' => $lomEs['rights'] ?? [],
-                    'classification' => $lomEs['classification'] ?? [],
-                ],
+                'content' => $data['lomEs'] ?? [],
             ];
-        }
-
-        $pages = [];
-        if (isset($data['_nodeIdDict']['0'])) {
-            $this->collectPages($data['_nodeIdDict']['0'], 0, $pages);
         }
 
         return [
             'metadata' => $meta,
-            'content' => [
-                'file' => basename($this->filePath),
-                'pages' => $pages,
-            ],
         ];
     }
 
