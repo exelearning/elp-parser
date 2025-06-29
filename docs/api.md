@@ -115,7 +115,7 @@ Return a detailed metadata array containing Package, Dublin Core, LOM and LOM-ES
 information together with the page tree.
 
 - **Throws:** `Exception` if the XML cannot be parsed
-- **Returns:** array - Metadata and content structure
+- **Returns:** array - Metadata structure
 
 #### `extract(string $destinationPath): void`
 
