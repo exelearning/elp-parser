@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Unit tests for ELPParser class
  *
@@ -17,14 +18,15 @@ use Exelearning\ELPParser;
 use Exception;
 
 it(
-    'can parse a version 3 ELP file', function () {
+    'can parse a version 3 ELP file',
+    function () {
         $elpFile = __DIR__ . '/../Fixtures/exe3-accessibility-revision.elp';
-    
+
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 2 not found');
-    
+
         $parser = ELPParser::fromFile($elpFile);
-    
+
         // Check version detection
         expect($parser->getVersion())->toBe(3);
 
@@ -40,21 +42,22 @@ it(
         $strings = $parser->getStrings();
         expect($strings)->toBeArray();
         expect(count($strings))->toBeGreaterThan(0);
-    
+
         // Optionally, check for some expected content
         // expect($strings)->toContain('Some expected text from version 2 file');
     }
 );
 
 it(
-    'can parse another version 3 ELP file', function () {
+    'can parse another version 3 ELP file',
+    function () {
         $elpFile = __DIR__ . '/../Fixtures/exe3-parada-2-riesgos-de-la-ruta-itinerario-para-la-empleabilidad-i.elp';
-    
+
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 2 not found');
-    
+
         $parser = ELPParser::fromFile($elpFile);
-    
+
         // Check version detection
         expect($parser->getVersion())->toBe(3);
 
@@ -70,21 +73,22 @@ it(
         $strings = $parser->getStrings();
         expect($strings)->toBeArray();
         expect(count($strings))->toBeGreaterThan(0);
-    
+
         // Optionally, check for some expected content
         // expect($strings)->toContain('Some expected text from version 2 file');
     }
 );
 
 it(
-    'can parse a version 2 ELP file', function () {
+    'can parse a version 2 ELP file',
+    function () {
         $elpFile = __DIR__ . '/../Fixtures/exe2-ipe1_parada2.elp';
-    
+
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
-    
+
         $parser = ELPParser::fromFile($elpFile);
-    
+
         // Check version detection
         expect($parser->getVersion())->toBe(2);
 
@@ -101,7 +105,7 @@ it(
         $strings = $parser->getStrings();
         expect($strings)->toBeArray();
         // expect(count($strings))->toBeGreaterThan(0);
-    
+
         // Optionally, check for some expected content
         // expect($strings)->toContain('Some expected text from version 3 file');
     }
@@ -157,23 +161,24 @@ it(
 );
 
 it(
-    'can extract an ELP file using a temporary directory', function () {
+    'can extract an ELP file using a temporary directory',
+    function () {
         $elpFile = __DIR__ . '/../Fixtures/exe2-ipe1_parada3.elp';
-    
+
         // Create a unique temporary directory
         $tempDir = sys_get_temp_dir() . '/elp_extracted_' . uniqid();
         mkdir($tempDir, 0700, true);
-    
+
         try {
             // Create an instance of the parser
             $parser = ELPParser::fromFile($elpFile);
-        
+
             // Attempt to extract to the temporary directory
             $parser->extract($tempDir);
-        
+
             // Verify that the extraction directory was created
             expect(is_dir($tempDir))->toBeTrue('The extraction directory was not created');
-        
+
             // Verify that the contentv3.xml file exists within the extracted files
             expect(file_exists($tempDir . '/contentv3.xml'))->toBeTrue('contentv3.xml not found in the extracted files');
         } finally {
@@ -187,14 +192,15 @@ it(
 );
 
 it(
-    'can parse a version v26 simple ELP file', function () {
+    'can parse a version v26 simple ELP file',
+    function () {
         $elpFile = __DIR__ . '/../Fixtures/exe26-editado-con-2.6-simplificado.elp';
-    
+
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
-    
+
         $parser = ELPParser::fromFile($elpFile);
-    
+
         // Check version detection
         expect($parser->getVersion())->toBe(2);
 
@@ -211,21 +217,22 @@ it(
         $strings = $parser->getStrings();
         expect($strings)->toBeArray();
         // expect(count($strings))->toBeGreaterThan(0);
-    
+
         // Optionally, check for some expected content
         // expect($strings)->toContain('Some expected text from version 3 file');
     }
 );
 
 it(
-    'can parse a version v26 more simple ELP file', function () {
+    'can parse a version v26 more simple ELP file',
+    function () {
         $elpFile = __DIR__ . '/../Fixtures/exe26-editado-con-2.6-sencillo.elp';
-    
+
         // Ensure the test file exists
         expect(file_exists($elpFile))->toBeTrue('Test ELP file for version 3 not found');
-    
+
         $parser = ELPParser::fromFile($elpFile);
-    
+
         // Check version detection
         expect($parser->getVersion())->toBe(2);
 
@@ -242,17 +249,18 @@ it(
         $strings = $parser->getStrings();
         expect($strings)->toBeArray();
         // expect(count($strings))->toBeGreaterThan(0);
-    
+
         // Optionally, check for some expected content
         // expect($strings)->toContain('Some expected text from version 3 file');
     }
 );
 
 it(
-    'throws an exception for invalid ELP file', function () {
+    'throws an exception for invalid ELP file',
+    function () {
 
         // Test with inexistent file
-        $invalidFile0 = __DIR__ . '/../Fixtures/nonexisting.zip';    
+        $invalidFile0 = __DIR__ . '/../Fixtures/nonexisting.zip';
         expect(fn() => ELPParser::fromFile($invalidFile0))
             ->toThrow(Exception::class, 'File does not exist.');
 
@@ -262,13 +270,8 @@ it(
             ->toThrow(Exception::class, 'The file is not a valid ZIP file.');
 
         // Test with ZIP but no XML
-        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.zip';    
+        $invalidFile2 = __DIR__ . '/../Fixtures/invalid.zip';
         expect(fn() => ELPParser::fromFile($invalidFile2))
             ->toThrow(Exception::class, 'Invalid ELP file: No content XML found.');
-    
-
-
     }
 );
-
-

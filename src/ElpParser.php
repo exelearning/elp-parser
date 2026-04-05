@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ElpParser.php
  *
@@ -33,70 +34,70 @@ class ELPParser implements \JsonSerializable
 {
     /**
      * Path to the .elp file
-     * 
+     *
      * @var string
      */
     protected string $filePath;
 
     /**
      * ELP file version (2 or 3)
-     * 
+     *
      * @var int
      */
     protected int $version;
 
     /**
      * Extracted content and metadata
-     * 
+     *
      * @var array
      */
     protected array $content = [];
 
     /**
      * Raw extracted strings
-     * 
+     *
      * @var array
      */
     protected array $strings = [];
 
     /**
      * Title of the ELP content
-     * 
+     *
      * @var string
      */
     protected string $title = '';
 
     /**
      * Description of the ELP content
-     * 
+     *
      * @var string
      */
     protected string $description = '';
 
     /**
      * Author of the ELP content
-     * 
+     *
      * @var string
      */
     protected string $author = '';
 
     /**
      * License of the ELP content
-     * 
+     *
      * @var string
      */
     protected string $license = '';
 
     /**
      * Language of the ELP content
-     * 
+     *
      * @var string
      */
     protected string $language = '';
 
     /**
      * Learning resource type
-     * 
+     *
      * @var string
      */
     protected string $learningResourceType = '';
@@ -105,7 +106,7 @@ class ELPParser implements \JsonSerializable
      * Create a new ELPParser instance
      *
      * @param string $filePath Path to the .elp file
-     * 
+     *
      * @throws Exception If file cannot be opened or is invalid
      * @return void
      */
@@ -119,7 +120,7 @@ class ELPParser implements \JsonSerializable
      * Static method to create an ELPParser from a file path
      *
      * @param string $filePath Path to the .elp file
-     * 
+     *
      * @throws Exception If file cannot be opened or is invalid
      * @return self
      */
@@ -137,7 +138,7 @@ class ELPParser implements \JsonSerializable
     protected function parse(): void
     {
         $zip = new ZipArchive();
-        
+
         if (!file_exists($this->filePath)) {
             throw new Exception('File does not exist.');
         }
@@ -181,7 +182,7 @@ class ELPParser implements \JsonSerializable
      * Parse the XML content and extract relevant information
      *
      * @param string $xmlContent XML content as a string
-     * 
+     *
      * @throws Exception If XML parsing fails
      * @return void
      */
@@ -210,7 +211,7 @@ class ELPParser implements \JsonSerializable
      * Extract strings from the XML document
      *
      * @param SimpleXMLElement $xml XML document
-     * 
+     *
      * @return void
      */
     protected function extractStrings(SimpleXMLElement $xml): void
@@ -223,7 +224,7 @@ class ELPParser implements \JsonSerializable
      * Recursively extract all text strings from XML
      *
      * @param SimpleXMLElement $element XML element to extract from
-     * 
+     *
      * @return array Extracted strings
      */
     protected function recursiveStringExtraction(SimpleXMLElement $element): array
@@ -279,7 +280,7 @@ class ELPParser implements \JsonSerializable
      * Extract metadata from version 3 XML format
      *
      * @param SimpleXMLElement $xml XML document
-     * 
+     *
      * @return void
      */
     protected function extractVersion3Metadata(SimpleXMLElement $xml): void
@@ -290,24 +291,24 @@ class ELPParser implements \JsonSerializable
                 $value = (string)$property->value;
 
                 switch ($key) {
-                case 'pp_title':
-                    $this->title = $value;
-                    break;
-                case 'pp_description':
-                    $this->description = $value;
-                    break;
-                case 'pp_author':
-                    $this->author = $value;
-                    break;
-                case 'license':
-                    $this->license = $value;
-                    break;
-                case 'lom_general_language':
-                    $this->language = $value;
-                    break;
-                case 'pp_learningResourceType':
-                    $this->learningResourceType = $value;
-                    break;
+                    case 'pp_title':
+                        $this->title = $value;
+                        break;
+                    case 'pp_description':
+                        $this->description = $value;
+                        break;
+                    case 'pp_author':
+                        $this->author = $value;
+                        break;
+                    case 'license':
+                        $this->license = $value;
+                        break;
+                    case 'lom_general_language':
+                        $this->language = $value;
+                        break;
+                    case 'pp_learningResourceType':
+                        $this->learningResourceType = $value;
+                        break;
                 }
             }
         }
@@ -377,7 +378,7 @@ class ELPParser implements \JsonSerializable
      * Extract metadata from version 2 XML format
      *
      * @param SimpleXMLElement $xml XML document
-     * 
+     *
      * @return void
      */
     protected function extractVersion2Metadata(SimpleXMLElement $xml): void
@@ -402,35 +403,35 @@ class ELPParser implements \JsonSerializable
             } elseif ($currentKey !== null) {
                 // Extract the value based on the type of element
                 switch ($elementName) {
-                case 'unicode':
-                    $metadata[$currentKey] = (string)$element['value'];
-                    break;
-                case 'bool':
-                    $metadata[$currentKey] = ((string)$element['value']) === '1';
-                    break;
-                case 'int':
-                    $metadata[$currentKey] = (int)$element['value'];
-                    break;
-                case 'list':
-                    // Handle lists if necessary
-                    $listValues = [];
-                    foreach ($element->children() as $listItem) {
-                        if ($listItem->getName() === 'unicode') {
-                            $listValues[] = (string)$listItem['value'];
+                    case 'unicode':
+                        $metadata[$currentKey] = (string)$element['value'];
+                        break;
+                    case 'bool':
+                        $metadata[$currentKey] = ((string)$element['value']) === '1';
+                        break;
+                    case 'int':
+                        $metadata[$currentKey] = (int)$element['value'];
+                        break;
+                    case 'list':
+                        // Handle lists if necessary
+                        $listValues = [];
+                        foreach ($element->children() as $listItem) {
+                            if ($listItem->getName() === 'unicode') {
+                                $listValues[] = (string)$listItem['value'];
+                            }
+                            // Add handling for other types of elements within the list if necessary
                         }
-                        // Add handling for other types of elements within the list if necessary
-                    }
-                    $metadata[$currentKey] = $listValues;
-                    break;
-                case 'dictionary':
-                    // Handle nested dictionaries if necessary
-                    // This may require a recursive function
-                    // For simplicity, it can be omitted or implemented as needed
-                    break;
+                        $metadata[$currentKey] = $listValues;
+                        break;
+                    case 'dictionary':
+                        // Handle nested dictionaries if necessary
+                        // This may require a recursive function
+                        // For simplicity, it can be omitted or implemented as needed
+                        break;
                     // Add other cases as needed
-                default:
-                    // Handle unknown types or ignore them
-                    break;
+                    default:
+                        // Handle unknown types or ignore them
+                        break;
                 }
 
                 // Reset the current key after assigning the value
@@ -445,7 +446,6 @@ class ELPParser implements \JsonSerializable
         $this->license = $metadata['license'] ?? '';
         $this->language = $metadata['_lang'] ?? '';
         $this->learningResourceType = $metadata['_learningResourceType'] ?? '';
-
     }
 
 
@@ -542,7 +542,7 @@ class ELPParser implements \JsonSerializable
         $meta = [
             [
                 'schema' => 'Package',
-                'content' => [ 
+                'content' => [
                     'title' => $data['_title'] ?? '',
                     'lang' => $data['_lang'] ?? '',
                     'description' => [
@@ -618,40 +618,40 @@ class ELPParser implements \JsonSerializable
         $name = $element->getName();
 
         switch ($name) {
-        case 'unicode':
-        case 'string':
-            return (string) $element['value'];
-        case 'int':
-            return (int) $element['value'];
-        case 'bool':
-            return ((string) $element['value']) === '1';
-        case 'list':
-            $list = [];
-            foreach ($element->children() as $child) {
-                $list[] = $this->parseElement($child);
-            }
-            return $list;
-        case 'dictionary':
-            $dict = [];
-            $key = null;
-            foreach ($element->children() as $child) {
-                $cname = $child->getName();
-                if (($cname === 'string' || $cname === 'unicode') && (string) $child['role'] === 'key') {
-                    $key = (string) $child['value'];
-                } elseif ($key !== null) {
-                    $dict[$key] = $this->parseElement($child);
-                    $key = null;
+            case 'unicode':
+            case 'string':
+                return (string) $element['value'];
+            case 'int':
+                return (int) $element['value'];
+            case 'bool':
+                return ((string) $element['value']) === '1';
+            case 'list':
+                $list = [];
+                foreach ($element->children() as $child) {
+                    $list[] = $this->parseElement($child);
                 }
-            }
-            return $dict;
-        case 'instance':
-            return $this->parseElement($element->dictionary);
-        case 'none':
-            return null;
-        case 'reference':
-            return ['ref' => (string) $element['key']];
-        default:
-            return null;
+                return $list;
+            case 'dictionary':
+                $dict = [];
+                $key = null;
+                foreach ($element->children() as $child) {
+                    $cname = $child->getName();
+                    if (($cname === 'string' || $cname === 'unicode') && (string) $child['role'] === 'key') {
+                        $key = (string) $child['value'];
+                    } elseif ($key !== null) {
+                        $dict[$key] = $this->parseElement($child);
+                        $key = null;
+                    }
+                }
+                return $dict;
+            case 'instance':
+                return $this->parseElement($element->dictionary);
+            case 'none':
+                return null;
+            case 'reference':
+                return ['ref' => (string) $element['key']];
+            default:
+                return null;
         }
     }
 
@@ -726,14 +726,14 @@ class ELPParser implements \JsonSerializable
      * Extract contents of an ELP file to a specified directory
      *
      * @param string $destinationPath Directory to extract contents to
-     * 
+     *
      * @throws Exception If extraction fails
      * @return void
      */
     public function extract(string $destinationPath): void
     {
         $zip = new ZipArchive();
-        
+
         if ($zip->open($this->filePath) !== true) {
             throw new Exception("Unable to open ELP file for extraction");
         }
@@ -826,8 +826,9 @@ function removeAccents(string $text, string $locale = ''): string
             'Ố' => 'O', 'ố' => 'o', 'Ớ' => 'O', 'ớ' => 'o', 'Ứ' => 'U', 'ứ' => 'u',
         ];
 
-        if ('de_DE' === $locale || 'de_DE_formal' === $locale 
-            || 'de_CH' === $locale || 'de_CH_informal' === $locale 
+        if (
+            'de_DE' === $locale || 'de_DE_formal' === $locale
+            || 'de_CH' === $locale || 'de_CH_informal' === $locale
             || 'de_AT' === $locale
         ) {
             $chars['Ä'] = 'Ae';

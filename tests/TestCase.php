@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Base TestCase class for ElpParser tests
  *
@@ -25,5 +26,4 @@ use Exelearning\ElpParser;
  */
 abstract class TestCase extends BaseTestCase
 {
-
 }
