@@ -14,15 +14,17 @@
 
 namespace Exelearning;
 
-use ZipArchive;
-use SimpleXMLElement;
 use Exception;
+use JsonSerializable;
+use SimpleXMLElement;
+use ZipArchive;
 
 /**
- * ELPParser class for parsing .elp (eXeLearning) project files
+ * Parser for eXeLearning project files.
  *
- * This class provides functionality to parse .elp files, which are ZIP archives
- * containing XML content for eXeLearning projects. It supports both version 2 and 3 formats.
+ * Supported project formats:
+ * - Legacy .elp packages based on contentv3.xml from eXeLearning 2.x
+ * - Modern .elp/.elpx packages based on content.xml (ODE 2.0) from eXeLearning 3+
  *
  * @category Parser
  * @package  Exelearning
@@ -30,82 +32,187 @@ use Exception;
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://github.com/exelearning/elp-parser
  */
-class ELPParser implements \JsonSerializable
+class ELPParser implements JsonSerializable
 {
     /**
-     * Path to the .elp file
+     * Path to the project file.
      *
      * @var string
      */
     protected string $filePath;
 
     /**
-     * ELP file version (2 or 3)
+     * Detected eXeLearning major version.
+     *
+     * Legacy projects are reported as version 2. Modern ODE-based projects
+     * are treated as version 3+ and default to 3 when the package does not
+     * expose a higher major version explicitly.
      *
      * @var int
      */
-    protected int $version;
+    protected int $version = 2;
 
     /**
-     * Extracted content and metadata
+     * Source file extension, usually elp or elpx.
+     *
+     * @var string
+     */
+    protected string $sourceExtension = '';
+
+    /**
+     * Project content format.
+     *
+     * Possible values:
+     * - legacy-contentv3
+     * - ode-content
+     *
+     * @var string
+     */
+    protected string $contentFormat = '';
+
+    /**
+     * XML entry name inside the archive.
+     *
+     * @var string
+     */
+    protected string $contentFile = '';
+
+    /**
+     * ODE schema version when available.
+     *
+     * @var string|null
+     */
+    protected ?string $contentSchemaVersion = null;
+
+    /**
+     * Raw eXeLearning version string when available.
+     *
+     * @var string|null
+     */
+    protected ?string $exeVersion = null;
+
+    /**
+     * Archive file list.
+     *
+     * @var array<int, string>
+     */
+    protected array $archiveEntries = [];
+
+    /**
+     * Whether the package includes a root content.dtd file.
+     *
+     * @var bool
+     */
+    protected bool $hasRootDtd = false;
+
+    /**
+     * Detected resource layout family.
+     *
+     * Possible values:
+     * - content-resources
+     * - legacy-temp-paths
+     * - mixed
+     * - none
+     *
+     * @var string
+     */
+    protected string $resourceLayout = 'none';
+
+    /**
+     * Parsed legacy dictionary data.
      *
      * @var array
      */
-    protected array $content = [];
+    protected array $legacyData = [];
 
     /**
-     * Raw extracted strings
+     * Parsed modern ODE properties.
+     *
+     * @var array
+     */
+    protected array $odeProperties = [];
+
+    /**
+     * Parsed modern ODE resources.
+     *
+     * @var array
+     */
+    protected array $odeResources = [];
+
+    /**
+     * Raw extracted strings.
      *
      * @var array
      */
     protected array $strings = [];
 
     /**
-     * Title of the ELP content
+     * Parsed page information.
+     *
+     * @var array
+     */
+    protected array $pages = [];
+
+    /**
+     * Referenced assets found in content.
+     *
+     * @var array
+     */
+    protected array $assets = [];
+
+    /**
+     * Detailed referenced asset information.
+     *
+     * @var array
+     */
+    protected array $assetsDetailed = [];
+
+    /**
+     * Title of the project.
      *
      * @var string
      */
     protected string $title = '';
 
     /**
-     * Description of the ELP content
+     * Description of the project.
      *
      * @var string
      */
     protected string $description = '';
 
     /**
-     * Author of the ELP content
+     * Author of the project.
      *
      * @var string
      */
     protected string $author = '';
 
     /**
-     * License of the ELP content
+     * License of the project.
      *
      * @var string
      */
     protected string $license = '';
 
     /**
-     * Language of the ELP content
+     * Language of the project.
      *
      * @var string
      */
     protected string $language = '';
 
     /**
-     * Learning resource type
+     * Learning resource type.
      *
      * @var string
      */
     protected string $learningResourceType = '';
 
     /**
-     * Create a new ELPParser instance
+     * Create a new parser instance.
      *
-     * @param string $filePath Path to the .elp file
+     * @param string $filePath Path to the project file
      *
      * @throws Exception If file cannot be opened or is invalid
      * @return void
@@ -113,13 +220,14 @@ class ELPParser implements \JsonSerializable
     public function __construct(string $filePath)
     {
         $this->filePath = $filePath;
+        $this->sourceExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
         $this->parse();
     }
 
     /**
-     * Static method to create an ELPParser from a file path
+     * Create a parser from a file path.
      *
-     * @param string $filePath Path to the .elp file
+     * @param string $filePath Path to the project file
      *
      * @throws Exception If file cannot be opened or is invalid
      * @return self
@@ -130,131 +238,687 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Detect the ELP file version and parse its contents
+     * Detect the project format and parse its contents.
      *
      * @throws Exception If file parsing fails
      * @return void
      */
     protected function parse(): void
     {
-        $zip = new ZipArchive();
-
         if (!file_exists($this->filePath)) {
             throw new Exception('File does not exist.');
         }
 
-        // Check MIME type
-        $mimeType = mime_content_type($this->filePath);
-        if ($mimeType !== 'application/zip') {
+        $zip = new ZipArchive();
+        if ($zip->open($this->filePath) !== true) {
             throw new Exception('The file is not a valid ZIP file.');
         }
 
-        $zip = new ZipArchive();
-        if ($zip->open($this->filePath) !== true) {
-            throw new Exception('Unable to open the ZIP file.');
-        }
+        $this->archiveEntries = $this->readArchiveEntries($zip);
+        $this->hasRootDtd = in_array('content.dtd', $this->archiveEntries, true);
+        $this->resourceLayout = $this->detectResourceLayoutFromArchiveEntries($this->archiveEntries);
 
-        // Detect version
-        if ($zip->locateName('content.xml') !== false && $zip->locateName('index.html') !== false) {
-            $this->version = 3;
-            $contentFile = 'content.xml';
-        } elseif ($zip->locateName('contentv3.xml') !== false) {
+        if ($zip->locateName('contentv3.xml') !== false) {
+            $this->contentFormat = 'legacy-contentv3';
+            $this->contentFile = 'contentv3.xml';
             $this->version = 2;
-            $contentFile = 'contentv3.xml';
+        } elseif ($zip->locateName('content.xml') !== false) {
+            $this->contentFormat = 'ode-content';
+            $this->contentFile = 'content.xml';
         } else {
             $zip->close();
-            throw new Exception("Invalid ELP file: No content XML found.");
+            throw new Exception('Invalid ELP file: No content XML found.');
         }
 
-        // Extract content
-        $xmlContent = $zip->getFromName($contentFile);
+        $xmlContent = $zip->getFromName($this->contentFile);
         $zip->close();
 
         if ($xmlContent === false) {
-            throw new Exception("Failed to read XML content");
+            throw new Exception('Failed to read XML content.');
         }
 
-        $this->parseXML($xmlContent);
+        $xml = $this->loadXml($xmlContent);
+
+        if ($this->contentFormat === 'legacy-contentv3') {
+            $this->parseLegacyXml($xml);
+            return;
+        }
+
+        $this->parseModernXml($xml);
     }
 
-
     /**
-     * Parse the XML content and extract relevant information
+     * Parse a legacy contentv3.xml project.
      *
-     * @param string $xmlContent XML content as a string
+     * @param SimpleXMLElement $xml Parsed XML document
      *
-     * @throws Exception If XML parsing fails
      * @return void
      */
-    protected function parseXML(string $xmlContent): void
+    protected function parseLegacyXml(SimpleXMLElement $xml): void
     {
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($xmlContent);
+        $data = $this->parseElement($xml);
+        $this->legacyData = is_array($data) ? $data : [];
+
+        $this->title = $this->legacyData['_title'] ?? '';
+        $this->description = $this->legacyData['_description'] ?? '';
+        $this->author = $this->legacyData['_author'] ?? '';
+        $this->license = $this->legacyData['license'] ?? '';
+        $this->language = $this->legacyData['_lang'] ?? '';
+        $this->learningResourceType = $this->legacyData['_learningResourceType'] ?? '';
+
+        $this->strings = $this->recursiveStringExtraction($xml);
+
+        if (isset($this->legacyData['_root']) && is_array($this->legacyData['_root'])) {
+            $pages = [];
+            $this->collectLegacyPages($this->legacyData['_root'], 0, $pages);
+            $this->pages = $pages;
+            $this->assetsDetailed = $this->extractDetailedAssetsFromPages($pages);
+            $this->assets = $this->flattenAssetPaths($this->assetsDetailed);
+        }
+    }
+
+    /**
+     * Parse a modern ODE project based on content.xml.
+     *
+     * @param SimpleXMLElement $xml Parsed XML document
+     *
+     * @return void
+     */
+    protected function parseModernXml(SimpleXMLElement $xml): void
+    {
+        $this->contentSchemaVersion = isset($xml['version']) ? (string) $xml['version'] : null;
+        $this->odeResources = $this->readModernKeyValueNodes($this->xpath($xml, './x:odeResources/x:odeResource'));
+        $this->odeProperties = $this->readModernKeyValueNodes($this->xpath($xml, './x:odeProperties/x:odeProperty'));
+
+        $this->title = $this->odeProperties['pp_title'] ?? '';
+        $this->description = $this->odeProperties['pp_description'] ?? '';
+        $this->author = $this->odeProperties['pp_author'] ?? '';
+        $this->license = $this->odeProperties['pp_license'] ?? ($this->odeProperties['license'] ?? '');
+        $this->language = $this->odeProperties['pp_lang'] ?? ($this->odeProperties['lom_general_language'] ?? '');
+        $this->learningResourceType = $this->odeProperties['pp_learningResourceType'] ?? '';
+
+        $this->exeVersion = $this->odeResources['exe_version']
+            ?? ($this->odeProperties['pp_exelearning_version'] ?? null);
+        $this->version = $this->detectModernVersion($this->exeVersion);
+
+        $this->pages = $this->collectModernPages($xml);
+        $this->strings = $this->collectModernStrings($this->pages);
+        $this->assetsDetailed = $this->extractDetailedAssetsFromPages($this->pages);
+        $this->assets = $this->flattenAssetPaths($this->assetsDetailed);
+    }
+
+    /**
+     * Load XML content with hardened libxml settings.
+     *
+     * @param string $xmlContent XML content
+     *
+     * @throws Exception If XML parsing fails
+     * @return SimpleXMLElement
+     */
+    protected function loadXml(string $xmlContent): SimpleXMLElement
+    {
+        $previous = libxml_use_internal_errors(true);
+        $xml = simplexml_load_string($xmlContent, SimpleXMLElement::class, LIBXML_NONET);
 
         if ($xml === false) {
             $errors = libxml_get_errors();
             libxml_clear_errors();
-            throw new Exception("XML Parsing error: " . $errors[0]->message);
+            libxml_use_internal_errors($previous);
+            $message = isset($errors[0]) ? trim($errors[0]->message) : 'Unknown XML parsing error.';
+            throw new Exception('XML Parsing error: ' . $message);
         }
 
-        if ($this->version === 2) {
-            $this->extractVersion2Metadata($xml);
-        } else if ($this->version === 3) {
-            $this->extractVersion3Metadata($xml);
-        }
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
 
-        // Extract all strings
-        $this->extractStrings($xml);
+        return $xml;
     }
 
     /**
-     * Extract strings from the XML document
+     * Execute an XPath query with the default namespace mapped to x.
      *
-     * @param SimpleXMLElement $xml XML document
+     * @param SimpleXMLElement $node XML node
+     * @param string           $path XPath expression
      *
-     * @return void
+     * @return array
      */
-    protected function extractStrings(SimpleXMLElement $xml): void
+    protected function xpath(SimpleXMLElement $node, string $path): array
     {
-        // Customize this method to extract specific strings based on your needs
-        $this->strings = $this->recursiveStringExtraction($xml);
+        $namespaces = $node->getDocNamespaces(true);
+        if (isset($namespaces[''])) {
+            $node->registerXPathNamespace('x', $namespaces['']);
+        } else {
+            $path = str_replace('x:', '', $path);
+        }
+
+        $result = $node->xpath($path);
+
+        return is_array($result) ? $result : [];
     }
 
     /**
-     * Recursively extract all text strings from XML
+     * Read ZIP entry names.
+     *
+     * @param ZipArchive $zip Open ZIP archive
+     *
+     * @return array
+     */
+    protected function readArchiveEntries(ZipArchive $zip): array
+    {
+        $entries = [];
+
+        for ($index = 0; $index < $zip->numFiles; $index++) {
+            $name = $zip->getNameIndex($index);
+            if ($name !== false) {
+                $entries[] = $name;
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Convert modern ODE key/value collections into an associative array.
+     *
+     * @param array $nodes Nodes with key/value children
+     *
+     * @return array
+     */
+    protected function readModernKeyValueNodes(array $nodes): array
+    {
+        $values = [];
+
+        foreach ($nodes as $node) {
+            $key = isset($node->key) ? trim((string) $node->key) : '';
+            if ($key === '') {
+                continue;
+            }
+
+            $values[$key] = isset($node->value) ? trim((string) $node->value) : '';
+        }
+
+        return $values;
+    }
+
+    /**
+     * Detect the eXeLearning major version for modern projects.
+     *
+     * @param string|null $exeVersion Raw version string
+     *
+     * @return int
+     */
+    protected function detectModernVersion(?string $exeVersion): int
+    {
+        if ($exeVersion === null || $exeVersion === '') {
+            return $this->isLikelyVersion4Package() ? 4 : 3;
+        }
+
+        if (preg_match('/(?:^|[^0-9])([3-9])(?:\.[0-9]+)?/', $exeVersion, $matches) === 1) {
+            $detected = (int) $matches[1];
+
+            if ($detected <= 3 && $this->isLikelyVersion4Package()) {
+                return 4;
+            }
+
+            return $detected;
+        }
+
+        return $this->isLikelyVersion4Package() ? 4 : 3;
+    }
+
+    /**
+     * Detect the resource layout family from archive entries.
+     *
+     * @param array $entries ZIP entry names
+     *
+     * @return string
+     */
+    protected function detectResourceLayoutFromArchiveEntries(array $entries): string
+    {
+        $hasContentResources = false;
+        $hasLegacyTempPaths = false;
+
+        foreach ($entries as $entry) {
+            if (str_starts_with($entry, 'content/resources/')) {
+                $hasContentResources = true;
+            }
+
+            if (str_starts_with($entry, 'files/tmp/')) {
+                $hasLegacyTempPaths = true;
+            }
+        }
+
+        if ($hasContentResources && $hasLegacyTempPaths) {
+            return 'mixed';
+        }
+
+        if ($hasContentResources) {
+            return 'content-resources';
+        }
+
+        if ($hasLegacyTempPaths) {
+            return 'legacy-temp-paths';
+        }
+
+        return 'none';
+    }
+
+    /**
+     * Recursively extract all text strings from XML.
      *
      * @param SimpleXMLElement $element XML element to extract from
      *
-     * @return array Extracted strings
+     * @return array
      */
     protected function recursiveStringExtraction(SimpleXMLElement $element): array
     {
         $strings = [];
+        $elementArray = (array) $element;
 
-        // Convert SimpleXMLElement to array to handle complex structures
-        $elementArray = (array)$element;
-
-        foreach ($elementArray as $key => $value) {
-            if (is_string($value) && !empty(trim($value))) {
+        foreach ($elementArray as $value) {
+            if (is_string($value) && trim($value) !== '') {
                 $strings[] = trim($value);
-            } elseif ($value instanceof SimpleXMLElement) {
+                continue;
+            }
+
+            if ($value instanceof SimpleXMLElement) {
                 $strings = array_merge($strings, $this->recursiveStringExtraction($value));
-            } elseif (is_array($value)) {
-                foreach ($value as $subValue) {
-                    if ($subValue instanceof SimpleXMLElement) {
-                        $strings = array_merge($strings, $this->recursiveStringExtraction($subValue));
+                continue;
+            }
+
+            if (!is_array($value)) {
+                continue;
+            }
+
+            foreach ($value as $subValue) {
+                if ($subValue instanceof SimpleXMLElement) {
+                    $strings = array_merge($strings, $this->recursiveStringExtraction($subValue));
+                }
+            }
+        }
+
+        return array_values(array_unique($strings));
+    }
+
+    /**
+     * Recursively parse a contentv3 structure.
+     *
+     * @param SimpleXMLElement $element XML element
+     *
+     * @return mixed
+     */
+    protected function parseElement(SimpleXMLElement $element): mixed
+    {
+        $name = $element->getName();
+
+        switch ($name) {
+            case 'unicode':
+            case 'string':
+                return (string) $element['value'];
+            case 'int':
+                return (int) $element['value'];
+            case 'bool':
+                return ((string) $element['value']) === '1';
+            case 'list':
+                $list = [];
+                foreach ($element->children() as $child) {
+                    $list[] = $this->parseElement($child);
+                }
+                return $list;
+            case 'dictionary':
+                $dict = [];
+                $key = null;
+                foreach ($element->children() as $child) {
+                    $childName = $child->getName();
+                    if (($childName === 'string' || $childName === 'unicode') && (string) $child['role'] === 'key') {
+                        $key = (string) $child['value'];
+                    } elseif ($key !== null) {
+                        $dict[$key] = $this->parseElement($child);
+                        $key = null;
+                    }
+                }
+                return $dict;
+            case 'instance':
+                return isset($element->dictionary) ? $this->parseElement($element->dictionary) : [];
+            case 'none':
+                return null;
+            case 'reference':
+                return ['ref' => (string) $element['key']];
+            default:
+                return [];
+        }
+    }
+
+    /**
+     * Build page information for legacy projects.
+     *
+     * @param array $node  Node information
+     * @param int   $level Current depth level
+     * @param array $pages Accumulated pages
+     *
+     * @return void
+     */
+    protected function collectLegacyPages(array $node, int $level, array &$pages): void
+    {
+        $title = $node['_title'] ?? '';
+        $filename = $level === 0 ? 'index.html' : $this->slug($title) . '.html';
+
+        $idevices = [];
+        if (isset($node['idevices']) && is_array($node['idevices'])) {
+            foreach ($node['idevices'] as $idevice) {
+                $html = '';
+                if (isset($idevice['fields']) && is_array($idevice['fields'])) {
+                    foreach ($idevice['fields'] as $field) {
+                        if (isset($field['content_w_resourcePaths'])) {
+                            $html = (string) $field['content_w_resourcePaths'];
+                            break;
+                        }
+                    }
+                }
+
+                $idevices[] = [
+                    'id' => $idevice['_id'] ?? '',
+                    'type' => $idevice['_iDeviceDir'] ?? ($idevice['class_'] ?? ''),
+                    'title' => $idevice['_title'] ?? '',
+                    'text' => $this->htmlToText($html),
+                    'html' => $html,
+                    'visible' => true,
+                    'teacherOnly' => false,
+                ];
+            }
+        }
+
+        $pages[] = [
+            'id' => $node['_id'] ?? '',
+            'parentId' => is_array($node['parent'] ?? null) ? '' : ($node['parent'] ?? ''),
+            'filename' => $filename,
+            'title' => $title,
+            'pageName' => $title,
+            'level' => $level,
+            'visible' => true,
+            'highlight' => false,
+            'hidePageTitle' => false,
+            'editableInPage' => false,
+            'blocks' => [],
+            'idevices' => $idevices,
+        ];
+
+        if (!isset($node['children']) || !is_array($node['children'])) {
+            return;
+        }
+
+        foreach ($node['children'] as $child) {
+            if (is_array($child)) {
+                $this->collectLegacyPages($child, $level + 1, $pages);
+            }
+        }
+    }
+
+    /**
+     * Build page information for ODE projects.
+     *
+     * @param SimpleXMLElement $xml Parsed XML document
+     *
+     * @return array
+     */
+    protected function collectModernPages(SimpleXMLElement $xml): array
+    {
+        $pages = [];
+        $nodes = $this->xpath($xml, './x:odeNavStructures/x:odeNavStructure');
+
+        foreach ($nodes as $node) {
+            $pageProperties = $this->readModernKeyValueNodes(
+                $this->xpath($node, './x:odeNavStructureProperties/x:odeNavStructureProperty')
+            );
+
+            $blocks = [];
+            $idevices = [];
+
+            foreach ($this->xpath($node, './x:odePagStructures/x:odePagStructure') as $block) {
+                $blockProperties = $this->readModernKeyValueNodes(
+                    $this->xpath($block, './x:odePagStructureProperties/x:odePagStructureProperty')
+                );
+
+                $components = [];
+
+                foreach ($this->xpath($block, './x:odeComponents/x:odeComponent') as $component) {
+                    $componentProperties = $this->readModernKeyValueNodes(
+                        $this->xpath($component, './x:odeComponentsProperties/x:odeComponentsProperty')
+                    );
+
+                    $html = isset($component->htmlView) ? trim((string) $component->htmlView) : '';
+                    $componentData = [
+                        'id' => isset($component->odeIdeviceId) ? (string) $component->odeIdeviceId : '',
+                        'type' => isset($component->odeIdeviceTypeName) ? (string) $component->odeIdeviceTypeName : '',
+                        'order' => isset($component->odeComponentsOrder) ? (int) $component->odeComponentsOrder : 0,
+                        'text' => $this->htmlToText($html),
+                        'html' => $html,
+                        'jsonProperties' => $this->decodeJsonProperties(
+                            isset($component->jsonProperties) ? (string) $component->jsonProperties : ''
+                        ),
+                        'visible' => ($componentProperties['visibility'] ?? 'true') !== 'false',
+                        'teacherOnly' => ($componentProperties['teacherOnly'] ?? 'false') === 'true',
+                        'identifier' => $componentProperties['identifier'] ?? '',
+                        'cssClass' => $componentProperties['cssClass'] ?? '',
+                    ];
+
+                    $components[] = $componentData;
+                    $idevices[] = $componentData;
+                }
+
+                $blocks[] = [
+                    'id' => isset($block->odeBlockId) ? (string) $block->odeBlockId : '',
+                    'pageId' => isset($block->odePageId) ? (string) $block->odePageId : '',
+                    'name' => isset($block->blockName) ? (string) $block->blockName : '',
+                    'iconName' => isset($block->iconName) ? (string) $block->iconName : '',
+                    'order' => isset($block->odePagStructureOrder) ? (int) $block->odePagStructureOrder : 0,
+                    'visible' => ($blockProperties['visibility'] ?? 'true') !== 'false',
+                    'teacherOnly' => ($blockProperties['teacherOnly'] ?? 'false') === 'true',
+                    'allowToggle' => ($blockProperties['allowToggle'] ?? 'true') !== 'false',
+                    'minimized' => ($blockProperties['minimized'] ?? 'false') === 'true',
+                    'identifier' => $blockProperties['identifier'] ?? '',
+                    'cssClass' => $blockProperties['cssClass'] ?? '',
+                    'components' => $components,
+                ];
+            }
+
+            $pages[] = [
+                'id' => isset($node->odePageId) ? (string) $node->odePageId : '',
+                'parentId' => isset($node->odeParentPageId) ? (string) $node->odeParentPageId : '',
+                'title' => $pageProperties['titlePage'] ?? ((string) ($node->pageName ?? '')),
+                'pageName' => isset($node->pageName) ? (string) $node->pageName : '',
+                'nodeTitle' => $pageProperties['titleNode'] ?? '',
+                'description' => $pageProperties['description'] ?? '',
+                'order' => isset($node->odeNavStructureOrder) ? (int) $node->odeNavStructureOrder : 0,
+                'visible' => ($pageProperties['visibility'] ?? 'true') !== 'false',
+                'highlight' => ($pageProperties['highlight'] ?? 'false') === 'true',
+                'hidePageTitle' => ($pageProperties['hidePageTitle'] ?? 'false') === 'true',
+                'editableInPage' => ($pageProperties['editableInPage'] ?? 'false') === 'true',
+                'titleHtml' => $pageProperties['titleHtml'] ?? '',
+                'blocks' => $blocks,
+                'idevices' => $idevices,
+            ];
+        }
+
+        usort(
+            $pages,
+            static fn(array $left, array $right): int => ($left['order'] ?? 0) <=> ($right['order'] ?? 0)
+        );
+
+        return $pages;
+    }
+
+    /**
+     * Decode JSON component properties.
+     *
+     * @param string $json Raw JSON text
+     *
+     * @return array
+     */
+    protected function decodeJsonProperties(string $json): array
+    {
+        if ($json === '') {
+            return [];
+        }
+
+        $decoded = json_decode($json, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Convert HTML to plain text.
+     *
+     * @param string $html HTML fragment
+     *
+     * @return string
+     */
+    protected function htmlToText(string $html): string
+    {
+        if ($html === '') {
+            return '';
+        }
+
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/\s+/u', ' ', $text);
+
+        return trim((string) $text);
+    }
+
+    /**
+     * Extract unique strings from parsed modern pages.
+     *
+     * @param array $pages Page information
+     *
+     * @return array
+     */
+    protected function collectModernStrings(array $pages): array
+    {
+        $strings = [];
+
+        foreach ($pages as $page) {
+            foreach (['title', 'pageName', 'nodeTitle', 'description'] as $field) {
+                if (!empty($page[$field])) {
+                    $strings[] = trim((string) $page[$field]);
+                }
+            }
+
+            foreach ($page['blocks'] as $block) {
+                if (!empty($block['name'])) {
+                    $strings[] = trim((string) $block['name']);
+                }
+
+                foreach ($block['components'] as $component) {
+                    if (!empty($component['text'])) {
+                        $strings[] = trim((string) $component['text']);
                     }
                 }
             }
         }
 
-        return $strings;
+        return array_values(array_unique(array_filter($strings, static fn($value): bool => $value !== '')));
     }
 
     /**
-     * Get the detected ELP file version
+     * Extract referenced asset paths from page HTML.
      *
-     * @return int ELP file version (2 or 3)
+     * @param array $pages Page information
+     *
+     * @return array
+     */
+    protected function extractDetailedAssetsFromPages(array $pages): array
+    {
+        $assets = [];
+
+        foreach ($pages as $page) {
+            foreach ($page['idevices'] as $idevice) {
+                if (empty($idevice['html'])) {
+                    continue;
+                }
+
+                preg_match_all(
+                    '/(?:\{\{context_path\}\}\/)?([A-Za-z0-9_\/.\-]+\.(?:png|jpe?g|gif|svg|webp|bmp|mp3|wav|ogg|m4a|mp4|webm|ogv|pdf|docx?|xlsx?|pptx?|odt|ods|odp|zip))/i',
+                    $idevice['html'],
+                    $matches
+                );
+
+                foreach ($matches[1] as $match) {
+                    $path = ltrim($match, '/');
+                    $assets[$path] ??= [
+                        'path' => $path,
+                        'type' => $this->detectAssetType($path),
+                        'extension' => strtolower((string) pathinfo($path, PATHINFO_EXTENSION)),
+                        'pages' => [],
+                        'idevices' => [],
+                        'occurrences' => 0,
+                    ];
+
+                    $assets[$path]['pages'][$page['id'] ?: $page['title']] = [
+                        'id' => $page['id'] ?? '',
+                        'title' => $page['title'] ?? '',
+                    ];
+                    $assets[$path]['idevices'][$idevice['id'] ?: ($page['id'] . ':' . $idevice['type'])] = [
+                        'id' => $idevice['id'] ?? '',
+                        'type' => $idevice['type'] ?? '',
+                        'pageId' => $page['id'] ?? '',
+                        'pageTitle' => $page['title'] ?? '',
+                    ];
+                    $assets[$path]['occurrences']++;
+                }
+            }
+        }
+
+        foreach ($assets as &$asset) {
+            $asset['pages'] = array_values($asset['pages']);
+            $asset['idevices'] = array_values($asset['idevices']);
+        }
+        unset($asset);
+
+        ksort($assets);
+
+        return array_values($assets);
+    }
+
+    /**
+     * Flatten detailed assets to a sorted path list.
+     *
+     * @param array $assetsDetailed Detailed assets
+     *
+     * @return array
+     */
+    protected function flattenAssetPaths(array $assetsDetailed): array
+    {
+        $paths = array_map(static fn(array $asset): string => $asset['path'], $assetsDetailed);
+        sort($paths);
+
+        return $paths;
+    }
+
+    /**
+     * Detect the logical asset type from a file path.
+     *
+     * @param string $path Asset path
+     *
+     * @return string
+     */
+    protected function detectAssetType(string $path): string
+    {
+        $extension = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp' => 'image',
+            'mp3', 'wav', 'ogg', 'm4a' => 'audio',
+            'mp4', 'webm', 'ogv' => 'video',
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp' => 'document',
+            'zip' => 'archive',
+            default => 'other',
+        };
+    }
+
+    /**
+     * Get the detected eXeLearning major version.
+     *
+     * @return int
      */
     public function getVersion(): int
     {
@@ -262,9 +926,69 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Get all extracted strings
+     * Get the source project extension.
      *
-     * @return array List of extracted strings
+     * @return string
+     */
+    public function getSourceExtension(): string
+    {
+        return $this->sourceExtension;
+    }
+
+    /**
+     * Get the detected content format identifier.
+     *
+     * @return string
+     */
+    public function getContentFormat(): string
+    {
+        return $this->contentFormat;
+    }
+
+    /**
+     * Get the XML entry name used by the package.
+     *
+     * @return string
+     */
+    public function getContentFile(): string
+    {
+        return $this->contentFile;
+    }
+
+    /**
+     * Get the ODE schema version when available.
+     *
+     * @return string|null
+     */
+    public function getContentSchemaVersion(): ?string
+    {
+        return $this->contentSchemaVersion;
+    }
+
+    /**
+     * Get the raw eXeLearning version string when available.
+     *
+     * @return string|null
+     */
+    public function getExeVersion(): ?string
+    {
+        return $this->exeVersion;
+    }
+
+    /**
+     * Determine whether the project uses the legacy contentv3 format.
+     *
+     * @return bool
+     */
+    public function isLegacyFormat(): bool
+    {
+        return $this->contentFormat === 'legacy-contentv3';
+    }
+
+    /**
+     * Get all extracted strings.
+     *
+     * @return array
      */
     public function getStrings(): array
     {
@@ -272,50 +996,326 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Convert parser data to an array
+     * Get parsed page information.
      *
-     * @return array Parsed ELP file data
+     * @return array
      */
-    /**
-     * Extract metadata from version 3 XML format
-     *
-     * @param SimpleXMLElement $xml XML document
-     *
-     * @return void
-     */
-    protected function extractVersion3Metadata(SimpleXMLElement $xml): void
+    public function getPages(): array
     {
-        if (isset($xml->odeProperties)) {
-            foreach ($xml->odeProperties->odeProperty as $property) {
-                $key = (string)$property->key;
-                $value = (string)$property->value;
-
-                switch ($key) {
-                    case 'pp_title':
-                        $this->title = $value;
-                        break;
-                    case 'pp_description':
-                        $this->description = $value;
-                        break;
-                    case 'pp_author':
-                        $this->author = $value;
-                        break;
-                    case 'license':
-                        $this->license = $value;
-                        break;
-                    case 'lom_general_language':
-                        $this->language = $value;
-                        break;
-                    case 'pp_learningResourceType':
-                        $this->learningResourceType = $value;
-                        break;
-                }
-            }
-        }
+        return $this->pages;
     }
 
     /**
-     * Get the title
+     * Get only visible pages.
+     *
+     * @return array
+     */
+    public function getVisiblePages(): array
+    {
+        return array_values(
+            array_filter(
+                $this->pages,
+                static fn(array $page): bool => ($page['visible'] ?? true) === true
+            )
+        );
+    }
+
+    /**
+     * Get all blocks across all pages.
+     *
+     * @return array
+     */
+    public function getBlocks(): array
+    {
+        $blocks = [];
+
+        foreach ($this->pages as $page) {
+            foreach ($page['blocks'] ?? [] as $block) {
+                $blocks[] = $block + [
+                    'pageTitle' => $page['title'] ?? '',
+                ];
+            }
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * Get all idevices across all pages.
+     *
+     * @return array
+     */
+    public function getIdevices(): array
+    {
+        $idevices = [];
+
+        foreach ($this->pages as $page) {
+            foreach ($page['idevices'] ?? [] as $idevice) {
+                $idevices[] = $idevice + [
+                    'pageId' => $page['id'] ?? '',
+                    'pageTitle' => $page['title'] ?? '',
+                ];
+            }
+        }
+
+        return $idevices;
+    }
+
+    /**
+     * Get grouped text content for each page.
+     *
+     * @return array
+     */
+    public function getPageTexts(): array
+    {
+        $pageTexts = [];
+
+        foreach ($this->pages as $page) {
+            $texts = [];
+
+            foreach ($page['idevices'] ?? [] as $idevice) {
+                $text = trim((string) ($idevice['text'] ?? ''));
+                if ($text !== '') {
+                    $texts[] = $text;
+                }
+            }
+
+            $pageTexts[] = [
+                'id' => $page['id'] ?? '',
+                'title' => $page['title'] ?? '',
+                'pageName' => $page['pageName'] ?? '',
+                'visible' => $page['visible'] ?? true,
+                'texts' => $texts,
+                'text' => trim(implode("\n\n", $texts)),
+            ];
+        }
+
+        return $pageTexts;
+    }
+
+    /**
+     * Get grouped text content for visible pages only.
+     *
+     * @return array
+     */
+    public function getVisiblePageTexts(): array
+    {
+        return array_values(
+            array_filter(
+                $this->getPageTexts(),
+                static fn(array $pageText): bool => ($pageText['visible'] ?? true) === true
+            )
+        );
+    }
+
+    /**
+     * Get grouped text content for a single page by its ID.
+     *
+     * @param string $pageId Page identifier
+     *
+     * @return array|null
+     */
+    public function getPageTextById(string $pageId): ?array
+    {
+        foreach ($this->getPageTexts() as $pageText) {
+            if (($pageText['id'] ?? '') === $pageId) {
+                return $pageText;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get idevices marked as teacher-only.
+     *
+     * @return array
+     */
+    public function getTeacherOnlyIdevices(): array
+    {
+        return array_values(
+            array_filter(
+                $this->getIdevices(),
+                static fn(array $idevice): bool => ($idevice['teacherOnly'] ?? false) === true
+            )
+        );
+    }
+
+    /**
+     * Get hidden idevices.
+     *
+     * @return array
+     */
+    public function getHiddenIdevices(): array
+    {
+        return array_values(
+            array_filter(
+                $this->getIdevices(),
+                static fn(array $idevice): bool => ($idevice['visible'] ?? true) === false
+            )
+        );
+    }
+
+    /**
+     * Get asset paths referenced by the parsed content.
+     *
+     * @return array
+     */
+    public function getAssets(): array
+    {
+        return $this->assets;
+    }
+
+    /**
+     * Get detailed asset information.
+     *
+     * @return array
+     */
+    public function getAssetsDetailed(): array
+    {
+        return $this->assetsDetailed;
+    }
+
+    /**
+     * Get image asset paths.
+     *
+     * @return array
+     */
+    public function getImages(): array
+    {
+        return $this->filterAssetPathsByType('image');
+    }
+
+    /**
+     * Get audio asset paths.
+     *
+     * @return array
+     */
+    public function getAudioFiles(): array
+    {
+        return $this->filterAssetPathsByType('audio');
+    }
+
+    /**
+     * Get video asset paths.
+     *
+     * @return array
+     */
+    public function getVideoFiles(): array
+    {
+        return $this->filterAssetPathsByType('video');
+    }
+
+    /**
+     * Get document asset paths.
+     *
+     * @return array
+     */
+    public function getDocuments(): array
+    {
+        return $this->filterAssetPathsByType('document');
+    }
+
+    /**
+     * Get archive assets that are present in the ZIP but not referenced in parsed content.
+     *
+     * @return array
+     */
+    public function getOrphanAssets(): array
+    {
+        $referenced = array_fill_keys($this->assets, true);
+        $orphans = [];
+
+        foreach ($this->archiveEntries as $entry) {
+            if (str_ends_with($entry, '/')) {
+                continue;
+            }
+
+            $type = $this->detectAssetType($entry);
+            if (!in_array($type, ['image', 'audio', 'video', 'document', 'archive'], true)) {
+                continue;
+            }
+
+            if (!isset($referenced[$entry])) {
+                $orphans[] = $entry;
+            }
+        }
+
+        sort($orphans);
+
+        return $orphans;
+    }
+
+    /**
+     * Filter asset paths by logical type.
+     *
+     * @param string $type Asset type
+     *
+     * @return array
+     */
+    protected function filterAssetPathsByType(string $type): array
+    {
+        $paths = [];
+
+        foreach ($this->assetsDetailed as $asset) {
+            if (($asset['type'] ?? null) === $type) {
+                $paths[] = $asset['path'];
+            }
+        }
+
+        sort($paths);
+
+        return $paths;
+    }
+
+    /**
+     * Get archive entry names.
+     *
+     * @return array
+     */
+    public function getArchiveEntries(): array
+    {
+        return $this->archiveEntries;
+    }
+
+    /**
+     * Return whether the package contains a root content.dtd entry.
+     *
+     * @return bool
+     */
+    public function hasRootDtd(): bool
+    {
+        return $this->hasRootDtd;
+    }
+
+    /**
+     * Return the detected resource layout family.
+     *
+     * @return string
+     */
+    public function getResourceLayout(): string
+    {
+        return $this->resourceLayout;
+    }
+
+    /**
+     * Heuristic detection for likely eXeLearning 4-style packages.
+     *
+     * The package format alone does not always expose the exact major version.
+     * In practice, `.elpx` plus a root `content.dtd` is a useful signal for
+     * newer packages even when embedded metadata still reports `3.0`.
+     *
+     * @return bool
+     */
+    public function isLikelyVersion4Package(): bool
+    {
+        return $this->contentFormat === 'ode-content'
+            && $this->sourceExtension === 'elpx'
+            && $this->hasRootDtd;
+    }
+
+    /**
+     * Get the title.
      *
      * @return string
      */
@@ -325,7 +1325,7 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Get the description
+     * Get the description.
      *
      * @return string
      */
@@ -335,7 +1335,7 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Get the author
+     * Get the author.
      *
      * @return string
      */
@@ -345,7 +1345,7 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Get the license
+     * Get the license.
      *
      * @return string
      */
@@ -355,7 +1355,7 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Get the language
+     * Get the language.
      *
      * @return string
      */
@@ -365,7 +1365,7 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Get the learning resource type
+     * Get the learning resource type.
      *
      * @return string
      */
@@ -375,84 +1375,9 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Extract metadata from version 2 XML format
+     * Convert parser data to an array.
      *
-     * @param SimpleXMLElement $xml XML document
-     *
-     * @return void
-     */
-    protected function extractVersion2Metadata(SimpleXMLElement $xml): void
-    {
-        if (!isset($xml->dictionary)) {
-            return;
-        }
-
-        $metadata = [];
-        $currentKey = null;
-
-        foreach ($xml->dictionary->children() as $element) {
-            $elementName = $element->getName();
-
-            if ($elementName === 'string') {
-                $role = (string)$element['role'];
-                $value = (string)$element['value'];
-
-                if ($role === 'key') {
-                    $currentKey = $value;
-                }
-            } elseif ($currentKey !== null) {
-                // Extract the value based on the type of element
-                switch ($elementName) {
-                    case 'unicode':
-                        $metadata[$currentKey] = (string)$element['value'];
-                        break;
-                    case 'bool':
-                        $metadata[$currentKey] = ((string)$element['value']) === '1';
-                        break;
-                    case 'int':
-                        $metadata[$currentKey] = (int)$element['value'];
-                        break;
-                    case 'list':
-                        // Handle lists if necessary
-                        $listValues = [];
-                        foreach ($element->children() as $listItem) {
-                            if ($listItem->getName() === 'unicode') {
-                                $listValues[] = (string)$listItem['value'];
-                            }
-                            // Add handling for other types of elements within the list if necessary
-                        }
-                        $metadata[$currentKey] = $listValues;
-                        break;
-                    case 'dictionary':
-                        // Handle nested dictionaries if necessary
-                        // This may require a recursive function
-                        // For simplicity, it can be omitted or implemented as needed
-                        break;
-                    // Add other cases as needed
-                    default:
-                        // Handle unknown types or ignore them
-                        break;
-                }
-
-                // Reset the current key after assigning the value
-                $currentKey = null;
-            }
-        }
-
-        // Map the metadata to the corresponding properties
-        $this->title = $metadata['_title'] ?? '';
-        $this->description = $metadata['_description'] ?? '';
-        $this->author = $metadata['_author'] ?? '';
-        $this->license = $metadata['license'] ?? '';
-        $this->language = $metadata['_lang'] ?? '';
-        $this->learningResourceType = $metadata['_learningResourceType'] ?? '';
-    }
-
-
-    /**
-     * Serialization method
-     *
-     * @return array Data
+     * @return array
      */
     public function toArray(): array
     {
@@ -469,9 +1394,9 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * JSON serialization method
+     * JSON serialization method.
      *
-     * @return array Data to be JSON serialized
+     * @return array
      */
     public function jsonSerialize(): mixed
     {
@@ -479,15 +1404,12 @@ class ELPParser implements \JsonSerializable
     }
 
     /**
-     * Export parsed data as JSON string or file
-     *
-     * If a destination path is provided, the JSON string will be written to the
-     * given file. The method returns the JSON representation in any case.
+     * Export parsed data as JSON string or file.
      *
      * @param string|null $destinationPath Optional path to save the JSON file
      *
      * @throws Exception If the file cannot be written
-     * @return string    JSON representation of the parsed ELP data
+     * @return string
      */
     public function exportJson(?string $destinationPath = null): string
     {
@@ -497,47 +1419,39 @@ class ELPParser implements \JsonSerializable
             throw new Exception('Failed to encode JSON: ' . json_last_error_msg());
         }
 
-        if ($destinationPath !== null) {
-            if (file_put_contents($destinationPath, $json) === false) {
-                throw new Exception('Unable to write JSON file.');
-            }
+        if ($destinationPath !== null && file_put_contents($destinationPath, $json) === false) {
+            throw new Exception('Unable to write JSON file.');
         }
 
         return $json;
     }
 
     /**
-     * Get detailed metadata and content structure as an array
+     * Get detailed metadata information.
      *
-     * This method parses the underlying XML to build a rich metadata
-     * representation including package information, Dublin Core data,
-     * LOM and LOM-ES schemas as well as a simplified page tree.
-     *
-     * @throws Exception If the XML content cannot be parsed
-     * @return array Metadata and content information
+     * @return array
      */
     public function getMetadata(): array
     {
-        $zip = new ZipArchive();
-        if ($zip->open($this->filePath) !== true) {
-            throw new Exception('Unable to open the ZIP file.');
+        if ($this->isLegacyFormat()) {
+            return [
+                'metadata' => $this->buildLegacyMetadata(),
+            ];
         }
 
-        $contentFile = $this->version === 2 ? 'contentv3.xml' : 'content.xml';
-        $xmlContent = $zip->getFromName($contentFile);
-        $zip->close();
+        return [
+            'metadata' => $this->buildModernMetadata(),
+        ];
+    }
 
-        if ($xmlContent === false) {
-            throw new Exception('Failed to read XML content.');
-        }
-
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($xmlContent);
-        if ($xml === false) {
-            throw new Exception('XML Parsing error');
-        }
-
-        $data = $this->parseElement($xml->dictionary);
+    /**
+     * Build normalized legacy metadata output.
+     *
+     * @return array
+     */
+    protected function buildLegacyMetadata(): array
+    {
+        $data = $this->legacyData;
 
         $meta = [
             [
@@ -548,7 +1462,7 @@ class ELPParser implements \JsonSerializable
                     'description' => [
                         'general_description' => $data['_description'] ?? '',
                         'objectives' => $data['_objectives'] ?? '',
-                        'preknowledge' => $data['_preknowledge'] ?? ''
+                        'preknowledge' => $data['_preknowledge'] ?? '',
                     ],
                     'author' => $data['_author'] ?? '',
                     'license' => $data['license'] ?? '',
@@ -574,156 +1488,81 @@ class ELPParser implements \JsonSerializable
                         'level_3' => $data['_levelNames'][2] ?? '',
                     ],
                     'advanced_options' => [
-                        'custom_head' => $data['_extraHeadContent'] ?? ''
-                    ]
+                        'custom_head' => $data['_extraHeadContent'] ?? '',
+                    ],
                 ],
             ],
         ];
 
-        if (isset($data['dublinCore'])) {
-            $meta[] = [
-                'schema' => 'Dublin core',
-                'content' => $data['dublinCore'] ?? [],
-            ];
-        }
-
-        if (isset($data['lom'])) {
-            $meta[] = [
-                'schema' => 'LOM v1.0',
-                'content' => $data['lom'] ?? [],
-            ];
-        }
-
-        if (isset($data['lomEs'])) {
-            $meta[] = [
-                'schema' => 'LOM-ES v1.0',
-                'content' => $data['lomEs'] ?? [],
-            ];
-        }
-
-        return [
-            'metadata' => $meta,
-        ];
-    }
-
-    /**
-     * Recursively parse a dictionary structure
-     *
-     * @param SimpleXMLElement $element XML element
-     *
-     * @return mixed Parsed data
-     */
-    protected function parseElement(SimpleXMLElement $element): mixed
-    {
-        $name = $element->getName();
-
-        switch ($name) {
-            case 'unicode':
-            case 'string':
-                return (string) $element['value'];
-            case 'int':
-                return (int) $element['value'];
-            case 'bool':
-                return ((string) $element['value']) === '1';
-            case 'list':
-                $list = [];
-                foreach ($element->children() as $child) {
-                    $list[] = $this->parseElement($child);
-                }
-                return $list;
-            case 'dictionary':
-                $dict = [];
-                $key = null;
-                foreach ($element->children() as $child) {
-                    $cname = $child->getName();
-                    if (($cname === 'string' || $cname === 'unicode') && (string) $child['role'] === 'key') {
-                        $key = (string) $child['value'];
-                    } elseif ($key !== null) {
-                        $dict[$key] = $this->parseElement($child);
-                        $key = null;
-                    }
-                }
-                return $dict;
-            case 'instance':
-                return $this->parseElement($element->dictionary);
-            case 'none':
-                return null;
-            case 'reference':
-                return ['ref' => (string) $element['key']];
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Collect page data recursively
-     *
-     * @param array $node  Node information
-     * @param int   $level Current depth level
-     * @param array $pages Accumulated pages
-     *
-     * @return void
-     */
-    protected function collectPages(array $node, int $level, array &$pages): void
-    {
-        $title = $node['_title'] ?? '';
-        $filename = $level === 0 ? 'index.html' : $this->slug($title) . '.html';
-
-        $idevices = [];
-        if (isset($node['idevices']) && is_array($node['idevices'])) {
-            foreach ($node['idevices'] as $idevice) {
-                $html = '';
-                if (isset($idevice['fields']) && is_array($idevice['fields'])) {
-                    foreach ($idevice['fields'] as $field) {
-                        if (isset($field['content_w_resourcePaths'])) {
-                            $html = $field['content_w_resourcePaths'];
-                            break;
-                        }
-                    }
-                }
-                $idevices[] = [
-                    'id' => $idevice['_id'] ?? '',
-                    'type' => $idevice['_iDeviceDir'] ?? ($idevice['class_'] ?? ''),
-                    'title' => $idevice['_title'] ?? '',
-                    'text' => trim(strip_tags($html)),
-                    'html_code' => $html,
+        foreach (['dublinCore' => 'Dublin core', 'lom' => 'LOM v1.0', 'lomEs' => 'LOM-ES v1.0'] as $key => $schema) {
+            if (isset($data[$key])) {
+                $meta[] = [
+                    'schema' => $schema,
+                    'content' => $data[$key] ?? [],
                 ];
             }
         }
 
-        $pages[] = [
-            'filename' => $filename,
-            'pagename' => $title,
-            'level' => $level,
-            'idevices' => $idevices,
-        ];
-
-        if (isset($node['children']) && is_array($node['children'])) {
-            foreach ($node['children'] as $child) {
-                if (is_array($child)) {
-                    $this->collectPages($child, $level + 1, $pages);
-                }
-            }
-        }
+        return $meta;
     }
 
     /**
-     * Create a filename-friendly slug from a string
+     * Build normalized modern metadata output.
+     *
+     * @return array
+     */
+    protected function buildModernMetadata(): array
+    {
+        return [
+            [
+                'schema' => 'Package',
+                'content' => [
+                    'title' => $this->title,
+                    'lang' => $this->language,
+                    'description' => [
+                        'general_description' => $this->description,
+                        'objectives' => '',
+                        'preknowledge' => '',
+                    ],
+                    'author' => $this->author,
+                    'license' => $this->license,
+                    'learningResourceType' => $this->learningResourceType,
+                    'format' => [
+                        'container' => $this->sourceExtension,
+                        'content_file' => $this->contentFile,
+                        'content_format' => $this->contentFormat,
+                        'schema_version' => $this->contentSchemaVersion ?? '',
+                        'resource_layout' => $this->resourceLayout,
+                        'has_root_dtd' => $this->hasRootDtd,
+                        'likely_version_4' => $this->isLikelyVersion4Package(),
+                    ],
+                    'project_properties' => $this->odeProperties,
+                    'project_resources' => $this->odeResources,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Create a filename-friendly slug from a string.
      *
      * @param string $text Input text
      *
-     * @return string Slug
+     * @return string
      */
     protected function slug(string $text): string
     {
         $slug = removeAccents($text);
         $slug = strtolower($slug);
         $slug = preg_replace('/[^a-z0-9]+/', '_', $slug);
-        return trim($slug, '_');
+
+        return trim((string) $slug, '_');
     }
 
     /**
-     * Extract contents of an ELP file to a specified directory
+     * Extract the project contents to a directory.
+     *
+     * Extraction is performed entry by entry to block path traversal attempts.
      *
      * @param string $destinationPath Directory to extract contents to
      *
@@ -735,15 +1574,85 @@ class ELPParser implements \JsonSerializable
         $zip = new ZipArchive();
 
         if ($zip->open($this->filePath) !== true) {
-            throw new Exception("Unable to open ELP file for extraction");
+            throw new Exception('Unable to open ELP/ELPX file for extraction.');
         }
 
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
+        if (!file_exists($destinationPath) && !mkdir($destinationPath, 0755, true) && !is_dir($destinationPath)) {
+            $zip->close();
+            throw new Exception('Unable to create destination directory.');
         }
 
-        $zip->extractTo($destinationPath);
+        $destinationRoot = realpath($destinationPath);
+        if ($destinationRoot === false) {
+            $zip->close();
+            throw new Exception('Unable to resolve destination directory.');
+        }
+
+        for ($index = 0; $index < $zip->numFiles; $index++) {
+            $entryName = $zip->getNameIndex($index);
+            if ($entryName === false) {
+                continue;
+            }
+
+            if ($this->isUnsafeArchivePath($entryName)) {
+                $zip->close();
+                throw new Exception('Unsafe ZIP entry detected: ' . $entryName);
+            }
+
+            $targetPath = $destinationRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $entryName);
+
+            if (str_ends_with($entryName, '/')) {
+                if (!is_dir($targetPath) && !mkdir($targetPath, 0755, true) && !is_dir($targetPath)) {
+                    $zip->close();
+                    throw new Exception('Unable to create directory during extraction.');
+                }
+                continue;
+            }
+
+            $targetDir = dirname($targetPath);
+            if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
+                $zip->close();
+                throw new Exception('Unable to create directory during extraction.');
+            }
+
+            $stream = $zip->getStream($entryName);
+            if ($stream === false) {
+                $zip->close();
+                throw new Exception('Unable to read ZIP entry: ' . $entryName);
+            }
+
+            $contents = stream_get_contents($stream);
+            fclose($stream);
+
+            if ($contents === false || file_put_contents($targetPath, $contents) === false) {
+                $zip->close();
+                throw new Exception('Unable to extract ZIP entry: ' . $entryName);
+            }
+        }
+
         $zip->close();
+    }
+
+    /**
+     * Check if a ZIP entry path is unsafe.
+     *
+     * @param string $entryName ZIP entry name
+     *
+     * @return bool
+     */
+    protected function isUnsafeArchivePath(string $entryName): bool
+    {
+        if ($entryName === '' || str_starts_with($entryName, '/') || preg_match('/^[A-Za-z]:[\/\\\\]/', $entryName) === 1) {
+            return true;
+        }
+
+        foreach (preg_split('#[\/\\\\]+#', $entryName) as $segment) {
+            if ($segment === '..') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
@@ -881,7 +1790,7 @@ function removeAccents(string $text, string $locale = ''): string
  *
  * @param string $str Input string.
  *
- * @return bool True if the string is valid UTF-8.
+ * @return bool
  */
 function seemsUtf8(string $str): bool
 {
