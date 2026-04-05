@@ -1,140 +1,212 @@
 # API Reference
 
-## ELPParser Class
+## `Exelearning\ELPParser`
 
-ELPParser class for parsing .elp (eXeLearning) project files. This class provides functionality to parse .elp files, which are ZIP archives containing XML content for eXeLearning projects. It supports both version 2 and 3 formats.
+Parser for eXeLearning `.elp` and `.elpx` project files.
 
-**Namespace:** `Exelearning`
+Supported project families:
 
-**Implements:** `JsonSerializable`
+- Legacy `.elp` packages using `contentv3.xml`
+- Modern `.elp` / `.elpx` packages using `content.xml`
 
 ### Constructor
 
 #### `__construct(string $filePath)`
 
-Create a new ELPParser instance.
-
-- **Parameters:**
-  - `$filePath` (string): Path to the .elp file
-- **Throws:** `Exception` if file cannot be opened or is invalid
-- **Return:** void
+Create a new parser instance from a project file path.
 
 ### Static Methods
 
 #### `fromFile(string $filePath): ELPParser`
 
-Static method to create an ELPParser from a file path.
+Create a parser instance from a file path.
 
-- **Parameters:**
-  - `$filePath` (string): Path to the .elp file
-- **Throws:** `Exception` if file cannot be opened or is invalid
-- **Returns:** `ELPParser`
-
-### Public Methods
+### Core Metadata
 
 #### `getVersion(): int`
 
-Get the detected ELP file version.
-
-- **Returns:** int - ELP file version (2 or 3)
-
-#### `getStrings(): array`
-
-Get all extracted strings.
-
-- **Returns:** array - List of extracted strings
+Return the detected eXeLearning major version.
 
 #### `getTitle(): string`
 
-Get the title of the ELP content.
-
-- **Returns:** string
+Return the project title.
 
 #### `getDescription(): string`
 
-Get the description of the ELP content.
-
-- **Returns:** string
+Return the project description.
 
 #### `getAuthor(): string`
 
-Get the author of the ELP content.
-
-- **Returns:** string
+Return the project author.
 
 #### `getLicense(): string`
 
-Get the license of the ELP content.
-
-- **Returns:** string
+Return the project license.
 
 #### `getLanguage(): string`
 
-Get the language of the ELP content.
-
-- **Returns:** string
+Return the project language.
 
 #### `getLearningResourceType(): string`
 
-Get the learning resource type.
+Return the learning resource type when present.
 
-- **Returns:** string
+### Format Introspection
 
-#### `toArray(): array`
+#### `getSourceExtension(): string`
 
-Convert parser data to an array.
+Return the source file extension, usually `elp` or `elpx`.
 
-- **Returns:** array - Array containing:
-  - version: int
-  - title: string
-  - description: string
-  - author: string
-  - license: string
-  - language: string
-  - learningResourceType: string
-  - strings: array
+#### `getContentFormat(): string`
 
-#### `jsonSerialize(): mixed`
+Return the detected internal project format:
 
-JSON serialization method implementing JsonSerializable interface.
+- `legacy-contentv3`
+- `ode-content`
 
-- **Returns:** mixed - Data to be JSON serialized
+#### `getContentFile(): string`
 
-#### `exportJson(?string $destinationPath = null): string`
+Return the XML entry used by the package:
 
-Export parsed data to JSON. If a destination path is provided, the JSON will be written to that file.
+- `contentv3.xml`
+- `content.xml`
 
-- **Parameters:**
-  - `$destinationPath` (string|null): Optional file path for the JSON output
-- **Throws:** `Exception` if the JSON cannot be written
-- **Returns:** string - JSON representation of the parsed data
+#### `getContentSchemaVersion(): ?string`
+
+Return the modern ODE schema version when available.
+
+#### `getExeVersion(): ?string`
+
+Return the raw upstream eXeLearning version string when available.
+
+#### `getResourceLayout(): string`
+
+Return the detected resource layout family:
+
+- `content-resources`
+- `legacy-temp-paths`
+- `mixed`
+- `none`
+
+#### `hasRootDtd(): bool`
+
+Return `true` when the archive contains `content.dtd` at the root.
+
+#### `isLikelyVersion4Package(): bool`
+
+Return `true` when the package matches the current v4 heuristic:
+
+- `.elpx`
+- modern `content.xml` / ODE package
+- root `content.dtd`
+
+#### `isLegacyFormat(): bool`
+
+Return `true` for legacy `contentv3.xml` projects.
+
+### Parsed Content
+
+#### `getStrings(): array`
+
+Return extracted strings from the project.
+
+#### `getPages(): array`
+
+Return parsed page information, including block and idevice data when available.
+
+#### `getVisiblePages(): array`
+
+Return only visible pages.
+
+#### `getBlocks(): array`
+
+Return all parsed blocks across all pages.
+
+#### `getIdevices(): array`
+
+Return all parsed idevices across all pages.
+
+#### `getPageTexts(): array`
+
+Return grouped text content for each page, including the per-idevice text list and a concatenated page text.
+
+#### `getVisiblePageTexts(): array`
+
+Return grouped text content for visible pages only.
+
+#### `getPageTextById(string $pageId): ?array`
+
+Return grouped text content for a single page, or `null` if the page ID does not exist.
+
+#### `getTeacherOnlyIdevices(): array`
+
+Return idevices marked as teacher-only.
+
+#### `getHiddenIdevices(): array`
+
+Return idevices whose visibility flag is false.
+
+#### `getAssets(): array`
+
+Return referenced asset paths detected in the parsed content.
+
+#### `getAssetsDetailed(): array`
+
+Return detailed asset records including path, type, extension, page origins, idevice origins and occurrence count.
+
+#### `getImages(): array`
+
+Return image asset paths.
+
+#### `getAudioFiles(): array`
+
+Return audio asset paths.
+
+#### `getVideoFiles(): array`
+
+Return video asset paths.
+
+#### `getDocuments(): array`
+
+Return document asset paths.
+
+#### `getOrphanAssets(): array`
+
+Return asset files present in the ZIP archive but not referenced by the parsed content.
+
+#### `getArchiveEntries(): array`
+
+Return the archive entry names inside the package.
 
 #### `getMetadata(): array`
 
-Return a detailed metadata array containing Package, Dublin Core, LOM and LOM-ES
-information together with the page tree.
+Return normalized metadata for the project.
 
-- **Throws:** `Exception` if the XML cannot be parsed
-- **Returns:** array - Metadata structure
+### Serialization
+
+#### `toArray(): array`
+
+Return a compact array summary with:
+
+- `version`
+- `title`
+- `description`
+- `author`
+- `license`
+- `language`
+- `learningResourceType`
+- `strings`
+
+#### `jsonSerialize(): mixed`
+
+Return the value used for JSON serialization.
+
+#### `exportJson(?string $destinationPath = null): string`
+
+Return the JSON representation of the compact summary and optionally write it to disk.
+
+### Extraction
 
 #### `extract(string $destinationPath): void`
 
-Extract contents of an ELP file to a specified directory.
-
-- **Parameters:**
-  - `$destinationPath` (string): Directory to extract contents to
-- **Throws:** `Exception` if extraction fails
-- **Returns:** void
-
-### Protected Properties
-
-- `$filePath` (string): Path to the .elp file
-- `$version` (int): ELP file version (2 or 3)
-- `$content` (array): Extracted content and metadata
-- `$strings` (array): Raw extracted strings
-- `$title` (string): Title of the ELP content
-- `$description` (string): Description of the ELP content
-- `$author` (string): Author of the ELP content
-- `$license` (string): License of the ELP content
-- `$language` (string): Language of the ELP content
-- `$learningResourceType` (string): Learning resource type
+Extract the package contents to a directory. Extraction is validated entry by entry to block unsafe ZIP paths.

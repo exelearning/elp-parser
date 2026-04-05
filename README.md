@@ -1,6 +1,6 @@
-# eXeLearning .elp Parser for PHP
+# eXeLearning `.elp` / `.elpx` Parser for PHP
 
-Simple, fast, and extension-free parser for eXeLearning project files
+Simple parser for eXeLearning project files.
 
 <p align="center">
     <a href="#features">Features</a> |
@@ -16,16 +16,16 @@ Simple, fast, and extension-free parser for eXeLearning project files
 
 ## Features
 
-**ELP Parser** provides a simple and intuitive API to parse eXeLearning project files (.elp):
+`ELPParser` supports the two eXeLearning project families described in the upstream format docs:
 
-- Parse both version 2 and version 3 .elp files
-- Extract text content from XML
-- Detect file version
-- Extract entire .elp file contents
-- Retrieve full metadata tree
-- No external extensions required
-- Lightweight and easy to use (less than 4 KB footprint library)
-- Compatible with PHP 8.0 to PHP 8.5
+- Legacy `.elp` projects from eXeLearning 2.x based on `contentv3.xml`
+- Modern `.elpx` projects from eXeLearning 3+ based on `content.xml` and ODE 2.0
+- Modern `.elp` exports that also use `content.xml`
+- Detection of eXeLearning major version when the package exposes it
+- Heuristic detection of likely v4-style `.elpx` packages using root `content.dtd`
+- Extraction of normalized metadata, strings, pages, idevices and asset references
+- Safe archive extraction with ZIP path traversal checks
+- JSON serialization support
 
 For more information, visit the [documentation](https://exelearning.github.io/elp-parser/).
 
@@ -33,11 +33,10 @@ For more information, visit the [documentation](https://exelearning.github.io/el
 
 - PHP 8.0+
 - Composer
-- zip extension
+- `zip` extension
+- `simplexml` extension
 
 ## Installation
-
-Install the package via Composer:
 
 ```bash
 composer require exelearning/elp-parser
@@ -51,78 +50,108 @@ composer require exelearning/elp-parser
 use Exelearning\ELPParser;
 
 try {
-    // Parse an .elp file
-    $parser = ELPParser::fromFile('/path/to/your/project.elp');
-    
-    // Get the file version
-    $version = $parser->getVersion(); // Returns 2 or 3
-    
-    // Get metadata fields
+    $parser = ELPParser::fromFile('/path/to/project.elpx');
+
+    $version = $parser->getVersion();
     $title = $parser->getTitle();
     $description = $parser->getDescription();
     $author = $parser->getAuthor();
     $license = $parser->getLicense();
     $language = $parser->getLanguage();
 
-    // Get all extracted strings
-    $strings = $parser->getStrings();
-    
-    // Print extracted strings
-    foreach ($strings as $string) {
+    foreach ($parser->getStrings() as $string) {
         echo $string . "\n";
     }
 } catch (Exception $e) {
-    echo "Error parsing ELP file: " . $e->getMessage();
+    echo "Error parsing project: " . $e->getMessage();
 }
 ```
 
-### File Extraction
+### Format Inspection
 
 ```php
 use Exelearning\ELPParser;
 
-try {
-    $parser = ELPParser::fromFile('/path/to/your/project.elp');
-    
-    // Extract entire .elp contents to a directory
-    $parser->extract('/path/to/destination/folder');
-} catch (Exception $e) {
-    echo "Error extracting ELP file: " . $e->getMessage();
-}
+$parser = ELPParser::fromFile('/path/to/project.elpx');
+
+echo $parser->getSourceExtension();      // elp | elpx
+echo $parser->getContentFormat();        // legacy-contentv3 | ode-content
+echo $parser->getContentFile();          // contentv3.xml | content.xml
+echo $parser->getContentSchemaVersion(); // 2.0 for modern ODE packages
+echo $parser->getExeVersion();           // raw upstream version string when present
+echo $parser->getResourceLayout();       // none | content-resources | legacy-temp-paths | mixed
+var_dump($parser->hasRootDtd());         // true when content.dtd exists at archive root
+var_dump($parser->isLikelyVersion4Package());
 ```
 
-### Advanced Usage
+### Pages and Assets
 
 ```php
-// Convert parsed data to array
-$data = $parser->toArray();
-
-// JSON serialization
-$jsonData = json_encode($parser);
-
-// Export directly to a JSON file
-$parser->exportJson('path/to/output.json');
-
-// Retrieve full metadata as array
-$meta = $parser->getMetadata();
+$pages = $parser->getPages();
+$visiblePages = $parser->getVisiblePages();
+$blocks = $parser->getBlocks();
+$idevices = $parser->getIdevices();
+$pageTexts = $parser->getPageTexts();
+$visiblePageTexts = $parser->getVisiblePageTexts();
+$firstPageText = $parser->getPageTextById($pages[0]['id']);
+$teacherOnlyIdevices = $parser->getTeacherOnlyIdevices();
+$hiddenIdevices = $parser->getHiddenIdevices();
+$assets = $parser->getAssets();
+$images = $parser->getImages();
+$audioFiles = $parser->getAudioFiles();
+$videoFiles = $parser->getVideoFiles();
+$documents = $parser->getDocuments();
+$assetsDetailed = $parser->getAssetsDetailed();
+$orphanAssets = $parser->getOrphanAssets();
+$metadata = $parser->getMetadata();
 ```
+
+In modern `content.xml` packages, assets usually live under paths such as `content/resources/...`.
+Older projects and some transitional exports may still reference legacy layouts such as `files/tmp/...`.
+The parser exposes this through `getResourceLayout()`.
+
+### Export JSON
+
+```php
+$json = $parser->exportJson();
+$parser->exportJson('/path/to/output.json');
+```
+
+### Extract Project Files
+
+```php
+$parser->extract('/path/to/destination');
+```
+
+## Version Compatibility
+
+The parser distinguishes between project format and eXeLearning version:
+
+- `getContentFormat()` tells you whether the package uses legacy `contentv3.xml` or modern `content.xml`
+- `getVersion()` reports the detected eXeLearning major version
+- In practice this means:
+  - eXeLearning 2.x legacy `.elp` => version `2`
+  - modern ODE-based `.elp` => usually version `3`
+  - `.elpx` packages with root `content.dtd` are treated as likely v4-style packages and currently report version `4`
+  - otherwise modern ODE-based packages default to version `3`
+
+This distinction matters because some projects created with newer eXeLearning builds still identify themselves internally with `exe_version=3.0`, so strict `v4` detection is not always possible from the package alone.
+For that reason, the library combines explicit metadata with format heuristics:
+
+- `.elpx`
+- `content.xml`
+- root `content.dtd`
+- optionally `content/resources/...` as the modern resource layout
 
 ## Error Handling
 
-The parser includes robust error handling:
-- Detects invalid .elp files
-- Throws exceptions for parsing errors
-- Supports both version 2 and 3 file formats
+The parser throws exceptions for:
 
-## Performance
-
-- Lightweight implementation
-- Minimal memory footprint
-- Fast XML parsing using native PHP extensions
-
-## Contributing
-
-Contributions are welcome! Please submit pull requests or open issues on our GitHub repository.
+- Missing files
+- Invalid ZIP archives
+- Unsupported project layouts
+- XML parsing failures
+- Unsafe archive entries during extraction
 
 ## License
 

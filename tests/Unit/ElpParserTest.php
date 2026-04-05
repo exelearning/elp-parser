@@ -275,3 +275,235 @@ it(
             ->toThrow(Exception::class, 'Invalid ELP file: No content XML found.');
     }
 );
+
+it(
+    'can parse a modern ELPX file and expose extended format metadata',
+    function () {
+        $elpxFile = __DIR__ . '/../Fixtures/un-contenido-de-ejemplo-para-probar-estilos-y-catalogacion.elpx';
+
+        expect(file_exists($elpxFile))->toBeTrue('Test ELPX file not found');
+
+        $parser = ELPParser::fromFile($elpxFile);
+
+        expect($parser->getVersion())->toBe(4);
+        expect($parser->getSourceExtension())->toBe('elpx');
+        expect($parser->getContentFormat())->toBe('ode-content');
+        expect($parser->getContentFile())->toBe('content.xml');
+        expect($parser->getContentSchemaVersion())->toBe('2.0');
+        expect($parser->getExeVersion())->toBe('3.0');
+        expect($parser->isLegacyFormat())->toBeFalse();
+        expect($parser->hasRootDtd())->toBeTrue();
+        expect($parser->getResourceLayout())->toBe('content-resources');
+        expect($parser->isLikelyVersion4Package())->toBeTrue();
+
+        expect($parser->getTitle())->toBe('Un contenido de ejemplo para probar estilos y catalogación');
+        expect($parser->getAuthor())->toBe('Ignacio Gros');
+        expect($parser->getDescription())->toContain('Descripción general');
+        expect($parser->getLanguage())->toBe('es');
+
+        $pages = $parser->getPages();
+        expect($pages)->toBeArray();
+        expect(count($pages))->toBe(14);
+        expect($pages[0]['title'])->toBe('Inicio');
+        expect($pages[0]['idevices'])->toBeArray();
+        expect($pages[0]['idevices'][0]['type'])->toBe('text');
+
+        $assets = $parser->getAssets();
+        expect($assets)->toContain('content/resources/00.jpg');
+        expect($assets)->toContain('content/resources/colegio.mp3');
+
+        $metadata = $parser->getMetadata();
+        expect($metadata['metadata'][0]['content']['format']['container'])->toBe('elpx');
+        expect($metadata['metadata'][0]['content']['project_resources']['exe_version'])->toBe('3.0');
+        expect($metadata['metadata'][0]['content']['format']['likely_version_4'])->toBeTrue();
+    }
+);
+
+it(
+    'can parse elpx page and component visibility properties',
+    function () {
+        $elpxFile = __DIR__ . '/../Fixtures/propiedades.elpx';
+
+        expect(file_exists($elpxFile))->toBeTrue('Properties ELPX fixture not found');
+
+        $parser = ELPParser::fromFile($elpxFile);
+        $pages = $parser->getPages();
+
+        expect($parser->getVersion())->toBe(4);
+        expect($parser->getTitle())->toBe('propiedades');
+        expect($parser->getLanguage())->toBe('eu');
+        expect($parser->getLicense())->toBe('creative commons: attribution - share alike 4.0');
+        expect($parser->hasRootDtd())->toBeTrue();
+        expect($parser->getResourceLayout())->toBe('none');
+        expect($parser->isLikelyVersion4Package())->toBeTrue();
+        expect(count($pages))->toBe(6);
+        expect($pages[0]['title'])->toBe('Propiedades idevices');
+        expect($pages[0]['idevices'][0]['visible'])->toBeTrue();
+        expect($pages[0]['idevices'][1]['visible'])->toBeFalse();
+        expect($pages[0]['idevices'][2]['teacherOnly'])->toBeTrue();
+        expect($pages[3]['pageName'])->toBe('Propiedades páginas - otro título');
+        expect($pages[3]['title'])->toBe('otro título!!!!!!!!!!!!!!');
+        expect($pages[3]['editableInPage'])->toBeTrue();
+        expect($pages[4]['visible'])->toBeFalse();
+        expect($parser->getStrings())->toContain('no visible en exportación');
+    }
+);
+
+it(
+    'distinguishes modern elp packages from likely version 4 elpx packages',
+    function () {
+        $modernElp = ELPParser::fromFile(__DIR__ . '/../Fixtures/exe3-accessibility-revision.elp');
+        $modernElpx = ELPParser::fromFile(__DIR__ . '/../Fixtures/un-contenido-de-ejemplo-para-probar-estilos-y-catalogacion.elpx');
+
+        expect($modernElp->getContentFormat())->toBe('ode-content');
+        expect($modernElp->getSourceExtension())->toBe('elp');
+        expect($modernElp->hasRootDtd())->toBeFalse();
+        expect($modernElp->isLikelyVersion4Package())->toBeFalse();
+        expect($modernElp->getResourceLayout())->toBe('content-resources');
+        expect($modernElp->getVersion())->toBe(3);
+
+        expect($modernElpx->getContentFormat())->toBe('ode-content');
+        expect($modernElpx->getSourceExtension())->toBe('elpx');
+        expect($modernElpx->hasRootDtd())->toBeTrue();
+        expect($modernElpx->isLikelyVersion4Package())->toBeTrue();
+        expect($modernElpx->getResourceLayout())->toBe('content-resources');
+        expect($modernElpx->getVersion())->toBe(4);
+    }
+);
+
+it(
+    'lists assets by type and exposes detailed asset origins',
+    function () {
+        $parser = ELPParser::fromFile(
+            __DIR__ . '/../Fixtures/un-contenido-de-ejemplo-para-probar-estilos-y-catalogacion.elpx'
+        );
+
+        $allAssets = $parser->getAssets();
+        $images = $parser->getImages();
+        $audio = $parser->getAudioFiles();
+        $video = $parser->getVideoFiles();
+        $documents = $parser->getDocuments();
+        $detailed = $parser->getAssetsDetailed();
+
+        expect($allAssets)->toContain('content/resources/00.jpg');
+        expect($allAssets)->toContain('content/resources/colegio.mp3');
+
+        expect($images)->toContain('content/resources/00.jpg');
+        expect($images)->toContain('content/resources/01.jpg');
+        expect($audio)->toBe(['content/resources/colegio.mp3']);
+        expect($video)->toBeArray()->toHaveCount(0);
+        expect($documents)->toBeArray()->toHaveCount(0);
+
+        expect($detailed)->toBeArray();
+        expect(count($detailed))->toBeGreaterThan(0);
+
+        $imageAsset = null;
+        $audioAsset = null;
+        foreach ($detailed as $asset) {
+            if ($asset['path'] === 'content/resources/00.jpg') {
+                $imageAsset = $asset;
+            }
+            if ($asset['path'] === 'content/resources/colegio.mp3') {
+                $audioAsset = $asset;
+            }
+        }
+
+        expect($imageAsset)->toBeArray();
+        expect($imageAsset['type'])->toBe('image');
+        expect($imageAsset['extension'])->toBe('jpg');
+        expect($imageAsset['occurrences'])->toBeGreaterThan(0);
+        expect($imageAsset['pages'])->toBeArray();
+        expect($imageAsset['idevices'])->toBeArray();
+        expect($imageAsset['pages'][0]['title'])->toBe('Inicio');
+
+        expect($audioAsset)->toBeArray();
+        expect($audioAsset['type'])->toBe('audio');
+        expect($audioAsset['extension'])->toBe('mp3');
+    }
+);
+
+it(
+    'lists visible pages blocks idevices and grouped page texts',
+    function () {
+        $parser = ELPParser::fromFile(__DIR__ . '/../Fixtures/propiedades.elpx');
+
+        $pages = $parser->getPages();
+        $visiblePages = $parser->getVisiblePages();
+        $blocks = $parser->getBlocks();
+        $idevices = $parser->getIdevices();
+        $pageTexts = $parser->getPageTexts();
+
+        expect($pages)->toHaveCount(6);
+        expect($visiblePages)->toHaveCount(5);
+        expect($blocks)->toBeArray();
+        expect(count($blocks))->toBeGreaterThan(0);
+        expect($idevices)->toBeArray();
+        expect(count($idevices))->toBeGreaterThan(0);
+        expect($pageTexts)->toHaveCount(6);
+
+        expect($blocks[0]['pageTitle'])->toBe('Propiedades idevices');
+        expect($idevices[0]['pageTitle'])->toBe('Propiedades idevices');
+
+        $hiddenPage = null;
+        $firstPageText = null;
+
+        foreach ($pageTexts as $pageText) {
+            if ($pageText['title'] === 'Propiedades idevices') {
+                $firstPageText = $pageText;
+            }
+            if ($pageText['pageName'] === 'Propiedades páginas - no visible') {
+                $hiddenPage = $pageText;
+            }
+        }
+
+        expect($firstPageText)->toBeArray();
+        expect($firstPageText['texts'])->toContain('normal');
+        expect($firstPageText['texts'])->toContain('no visible en exportación');
+        expect($firstPageText['text'])->toContain('visible solo en modo docente');
+
+        expect($hiddenPage)->toBeArray();
+        expect($hiddenPage['visible'])->toBeFalse();
+
+        $pageById = $parser->getPageTextById($pages[0]['id']);
+        expect($pageById)->toBeArray();
+        expect($pageById['title'])->toBe('Propiedades idevices');
+        expect($parser->getPageTextById('missing-page-id'))->toBeNull();
+    }
+);
+
+it(
+    'lists visible page texts teacher only idevices hidden idevices and orphan assets',
+    function () {
+        $propertiesParser = ELPParser::fromFile(__DIR__ . '/../Fixtures/propiedades.elpx');
+
+        $visiblePageTexts = $propertiesParser->getVisiblePageTexts();
+        $teacherOnlyIdevices = $propertiesParser->getTeacherOnlyIdevices();
+        $hiddenIdevices = $propertiesParser->getHiddenIdevices();
+        $orphans = $propertiesParser->getOrphanAssets();
+
+        expect($visiblePageTexts)->toHaveCount(5);
+        foreach ($visiblePageTexts as $pageText) {
+            expect($pageText['visible'])->toBeTrue();
+        }
+
+        expect($teacherOnlyIdevices)->toHaveCount(1);
+        expect($teacherOnlyIdevices[0]['teacherOnly'])->toBeTrue();
+        expect($teacherOnlyIdevices[0]['pageTitle'])->toBe('Propiedades idevices');
+
+        expect($hiddenIdevices)->toHaveCount(1);
+        expect($hiddenIdevices[0]['visible'])->toBeFalse();
+        expect($hiddenIdevices[0]['pageTitle'])->toBe('Propiedades idevices');
+
+        expect($orphans)->toContain('content/img/exe_powered_logo.png');
+        expect($orphans)->toContain('theme/screenshot.png');
+
+        $contentParser = ELPParser::fromFile(
+            __DIR__ . '/../Fixtures/un-contenido-de-ejemplo-para-probar-estilos-y-catalogacion.elpx'
+        );
+        $contentOrphans = $contentParser->getOrphanAssets();
+
+        expect($contentOrphans)->toContain('theme/screenshot.png');
+        expect($contentOrphans)->not->toContain('content/resources/00.jpg');
+        expect($contentOrphans)->not->toContain('content/resources/colegio.mp3');
+    }
+);
