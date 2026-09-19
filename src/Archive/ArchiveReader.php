@@ -239,6 +239,145 @@ class ArchiveReader
     }
 
     /**
+     * Determine whether an archive entry exists.
+     *
+     * @param string $entryName Entry name.
+     *
+     * @return bool
+     */
+    public function hasEntry(string $entryName): bool
+    {
+        $zip = $this->openArchive();
+
+        try {
+            return $zip->locateName($entryName) !== false;
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
+     * Copy one archive entry to a writable PHP stream.
+     *
+     * @param string        $entryName Entry name.
+     * @param resource      $output    Writable stream.
+     * @param int|null      $maxBytes  Optional byte limit.
+     *
+     * @return int Number of bytes written.
+     */
+    public function copyEntryToStream(
+        string $entryName,
+        $output,
+        ?int $maxBytes = null
+    ): int {
+        if (!is_resource($output)) {
+            throw new InvalidArchiveException('Output must be a writable stream resource.');
+        }
+
+        $limit = $maxBytes ?? $this->limits->maxEntryBytes;
+        $zip = $this->openArchive();
+
+        try {
+            $index = $zip->locateName($entryName);
+            if ($index === false) {
+                throw new InvalidArchiveException('ZIP entry not found: ' . $entryName);
+            }
+
+            $this->assertSafeEntryName($entryName);
+            $this->assertNotSymlink($zip, $index, $entryName);
+
+            $stat = $zip->statIndex($index);
+            if (is_array($stat) && (int) ($stat['size'] ?? 0) > $limit) {
+                throw new ResourceLimitException(
+                    'ZIP entry exceeds the configured read limit: ' . $entryName
+                );
+            }
+
+            $stream = $zip->getStream($entryName);
+            if ($stream === false) {
+                throw new InvalidArchiveException('Unable to read ZIP entry: ' . $entryName);
+            }
+
+            $written = 0;
+
+            try {
+                while (!feof($stream)) {
+                    $remaining = $limit - $written + 1;
+                    if ($remaining <= 0) {
+                        break;
+                    }
+
+                    $chunk = fread($stream, min(1048576, $remaining));
+                    if ($chunk === false) {
+                        throw new InvalidArchiveException(
+                            'Unable to read ZIP entry: ' . $entryName
+                        );
+                    }
+
+                    if ($chunk === '') {
+                        continue;
+                    }
+
+                    $written += strlen($chunk);
+                    if ($written > $limit) {
+                        throw new ResourceLimitException(
+                            'ZIP entry exceeds the configured read limit: ' . $entryName
+                        );
+                    }
+
+                    $this->writeAll($output, $chunk, $entryName);
+                }
+            } finally {
+                fclose($stream);
+            }
+
+            return $written;
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
+     * Extract one archive entry to an explicit filesystem path.
+     *
+     * @param string $entryName       Entry name.
+     * @param string $destinationPath Destination file path.
+     * @param int|null $maxBytes      Optional byte limit.
+     *
+     * @return void
+     */
+    public function extractEntry(
+        string $entryName,
+        string $destinationPath,
+        ?int $maxBytes = null
+    ): void {
+        $directory = dirname($destinationPath);
+
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new InvalidArchiveException('Unable to create destination directory.');
+        }
+
+        if (is_link($destinationPath)) {
+            throw new UnsafeArchiveException('Unsafe extraction target detected: ' . $destinationPath);
+        }
+
+        $output = fopen($destinationPath, 'wb');
+        if ($output === false) {
+            throw new InvalidArchiveException('Unable to open destination file.');
+        }
+
+        try {
+            $this->copyEntryToStream($entryName, $output, $maxBytes);
+        } catch (\Throwable $exception) {
+            fclose($output);
+            @unlink($destinationPath);
+            throw $exception;
+        }
+
+        fclose($output);
+    }
+
+    /**
      * Extract all entries while preserving configured resource limits.
      *
      * @param string $destinationPath Destination directory.

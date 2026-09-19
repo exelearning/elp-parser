@@ -113,6 +113,10 @@ Existing calls that pass `ArchiveLimits` directly remain supported.
 - `getMissingAssets(): array`
 - `getBrokenReferences(): array`
 - `getArchiveEntries(): array`
+- `hasEntry(string $entryName): bool`
+- `getEntryContents(string $entryName, ?int $maxBytes = null): string`
+- `copyEntryToStream(string $entryName, $output, ?int $maxBytes = null): int`
+- `extractEntry(string $entryName, string $destinationPath, ?int $maxBytes = null): void`
 - `getInternalLinks(): array`
 - `getBrokenInternalLinks(): array`
 - `getUsedIdeviceTypes(): array`
