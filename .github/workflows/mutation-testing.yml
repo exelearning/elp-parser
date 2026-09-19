@@ -1,0 +1,68 @@
+name: Mutation Testing
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "composer.json"
+      - "phpunit.xml"
+      - ".github/workflows/mutation-testing.yml"
+  schedule:
+    - cron: "41 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    name: Pest mutation tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: dom, libxml, mbstring, simplexml, tokenizer, xmlwriter, zip
+          coverage: pcov
+
+      - name: Install project dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Run mutation tests
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch origin "$BASE_REF"
+            MUTATION_PATHS="$(git diff --name-only --diff-filter=AMR "origin/$BASE_REF...HEAD" -- 'src/*.php' 'src/**/*.php' | paste -sd, -)"
+
+            if [ -z "$MUTATION_PATHS" ]; then
+              echo "No changed PHP source files to mutate."
+              exit 0
+            fi
+
+            vendor/bin/pest \
+              --mutate \
+              --parallel \
+              --path="$MUTATION_PATHS" \
+              --covered-only \
+              --ignore-min-score-on-zero-mutations \
+              --min=50
+          else
+            vendor/bin/pest \
+              --mutate \
+              --parallel \
+              --everything \
+              --covered-only \
+              --min=50
+          fi
