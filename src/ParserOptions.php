@@ -15,6 +15,7 @@
 namespace Exelearning;
 
 use Exelearning\Archive\ArchiveLimits;
+use Exelearning\Parser\IdeviceDecoderRegistry;
 
 /**
  * Parser feature and resource-limit options.
@@ -25,22 +26,26 @@ final class ParserOptions
     public bool $parseAssets;
     public bool $collectStrings;
     public bool $normalizeIdeviceState;
+    public ?IdeviceDecoderRegistry $ideviceDecoders;
 
     /**
      * @param ArchiveLimits|null $archiveLimits         Archive safety limits.
      * @param bool               $parseAssets           Resolve referenced assets during parsing.
      * @param bool               $collectStrings        Build the normalized strings collection.
-     * @param bool               $normalizeIdeviceState Decode modern iDevice state payloads.
+     * @param bool                       $normalizeIdeviceState Decode modern iDevice state payloads.
+     * @param IdeviceDecoderRegistry|null $ideviceDecoders       Optional custom decoder registry.
      */
     public function __construct(
         ?ArchiveLimits $archiveLimits = null,
         bool $parseAssets = true,
         bool $collectStrings = true,
-        bool $normalizeIdeviceState = true
+        bool $normalizeIdeviceState = true,
+        ?IdeviceDecoderRegistry $ideviceDecoders = null
     ) {
         $this->archiveLimits = $archiveLimits ?? new ArchiveLimits();
         $this->parseAssets = $parseAssets;
         $this->collectStrings = $collectStrings;
         $this->normalizeIdeviceState = $normalizeIdeviceState;
+        $this->ideviceDecoders = $ideviceDecoders;
     }
 }
