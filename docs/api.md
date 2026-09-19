@@ -179,6 +179,7 @@ All parser-specific exceptions extend `Exelearning\Exception\ElpParserException`
 ### Validation
 
 - `validate(): array` — alias of `validatePackage()`.
+- `validateResult(): Exelearning\\Validation\\ValidationResult` — typed diagnostics while preserving the array API.
 - `validatePackage(): array` — structural/package diagnostics with `valid`, `errors` and `warnings`.
 - `validateSchema(string $schemaPath, string $type = 'xsd'): array` — validate the project XML against a caller-supplied trusted local XSD or DTD.
 
@@ -195,3 +196,17 @@ Modern iDevice records include:
 - `stateDecodeError` — decoding error text without making project parsing fail.
 
 The existing `html` and decoded `jsonProperties` fields remain available.
+
+
+### Validation models
+
+- `Exelearning\Validation\Diagnostic`
+- `Exelearning\Validation\ValidationResult`
+
+`ValidationResult` provides `isValid()`, `errors()`, `warnings()`, `has()`, `toArray()` and JSON serialization.
+
+### Custom iDevice decoders
+
+Implement `Exelearning\Parser\IdeviceDecoderInterface`, register instances in `IdeviceDecoderRegistry`, then pass the registry through `ParserOptions::$ideviceDecoders`.
+
+The first registered decoder whose `supports()` method returns true supplies `customDecoder` and `customData` fields for the normalized iDevice.
