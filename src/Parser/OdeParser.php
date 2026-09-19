@@ -61,7 +61,8 @@ class OdeParser
             'license' => (string) ($properties['pp_license'] ?? ($properties['license'] ?? '')),
             'language' => (string) ($properties['pp_lang'] ?? ($properties['lom_general_language'] ?? '')),
             'learningResourceType' => (string) ($properties['pp_learningResourceType'] ?? ''),
-            'exeVersion' => $resources['exe_version'] ?? ($properties['pp_exelearning_version'] ?? null),
+            'exeVersion' => $resources['exe_version']
+                ?? ($resources['eXeVersion'] ?? ($properties['pp_exelearning_version'] ?? null)),
             'pages' => $pages,
             'strings' => $this->collectStrings($pages),
         ];

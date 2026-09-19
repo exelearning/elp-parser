@@ -206,12 +206,14 @@ class AssetReferenceExtractor
             return null;
         }
 
-        $variants = [
-            $normalized,
-            preg_replace('#^\./#', '', $normalized),
-        ];
+        $variants = [$normalized];
 
-        if (!str_starts_with($normalized, 'content/')) {
+        if (str_starts_with($normalized, 'resources/')) {
+            $variants[] = 'content/' . $normalized;
+        } elseif (!str_starts_with($normalized, 'content/')) {
+            // eXeLearning 4 uses {{context_path}}/<exportPath>, while v3
+            // commonly stored the full content/resources path in references.
+            $variants[] = 'content/resources/' . $normalized;
             $variants[] = 'content/' . $normalized;
         }
 

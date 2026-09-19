@@ -18,10 +18,15 @@ Factory equivalent to the constructor.
 - `getVersionInfo(): array` — declared version, declared major, detected major, detection source and signals.
 - `getSourceExtension(): string`
 - `getContentFormat(): string`
+- `getFormatFamily(): string` — `legacy` or `ode`.
 - `getContentFile(): string`
 - `getContentSchemaVersion(): ?string`
+- `getFormatVersion(): ?string` — internal format version such as ODE `2.0`, independent of eXeLearning 3/4.
 - `getExeVersion(): ?string`
+- `getApplicationVersion(): ?string` — raw declared eXeLearning application version.
+- `getPackageProfile(): string` — compatibility profile such as `legacy-v2`, `elpx-v3` or `elpx-v4`.
 - `getResourceLayout(): string`
+- `getResourceProfile(): string` — `v3-uuid-resources`, `v4-resource-tree`, `mixed-modern-resources`, `legacy-temp-paths` or `none`.
 - `hasRootDtd(): bool`
 - `isLikelyVersion4Package(): bool`
 - `isLegacyFormat(): bool`
@@ -60,7 +65,7 @@ Factory equivalent to the constructor.
 - `getOrphanAssets(): array`
 - `getArchiveEntries(): array`
 
-Asset references are returned only when they resolve to an entry in the project archive.
+Asset references are returned only when they resolve to an entry in the project archive. Both the v3 long form (`{{context_path}}/content/resources/...`) and the v4 form (`{{context_path}}/<exportPath>`) are resolved.
 
 ### Serialization and extraction
 
