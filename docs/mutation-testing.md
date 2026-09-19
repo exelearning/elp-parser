@@ -11,19 +11,21 @@ Configured quality gate:
 
 ## Pull requests
 
-PRs that modify source or tests mutate only code changed relative to the common ancestor with `main`:
+PRs calculate the changed PHP files under `src/` with Git and pass the resulting comma-separated list to Pest's supported `--path` filter:
 
 ```bash
+MUTATION_PATHS="$(git diff --name-only --diff-filter=AMR "origin/$BASE_REF...HEAD" -- 'src/*.php' 'src/**/*.php' | paste -sd, -)"
+
 vendor/bin/pest \
   --mutate \
   --parallel \
-  --changed-only \
+  --path="$MUTATION_PATHS" \
   --covered-only \
   --ignore-min-score-on-zero-mutations \
   --min=80
 ```
 
-The zero-mutation exception is intentional for PRs that only affect test infrastructure or non-PHP files selected by the workflow.
+When no PHP source file changed, the mutation job exits successfully without launching the mutation engine.
 
 ## Scheduled and manual full runs
 
