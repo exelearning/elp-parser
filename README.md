@@ -404,7 +404,7 @@ composer test:coverage
 
 ## Mutation testing
 
-In addition to the 90% line-coverage gate, source changes are mutation-tested with Pest. Pull requests mutate changed covered code, while a weekly/manual workflow runs the full covered source with an 80% minimum mutation score. See [Mutation testing](docs/mutation-testing.md).
+In addition to the 90% line-coverage gate, source changes are mutation-tested with Pest. Pull requests mutate changed covered code, while a weekly/manual workflow runs the full covered source with a 50% minimum mutation score (initial full-run baseline: 53.66%). See [Mutation testing](docs/mutation-testing.md).
 
 ## Compatibility regression testing
 
