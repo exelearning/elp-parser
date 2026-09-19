@@ -10,31 +10,68 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
+      actions: read
+      attestations: write
       contents: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0'
+          php-version: "8.4"
           extensions: simplexml, zip
           coverage: none
 
-      - name: Install dependencies
-        run: composer install --no-dev --prefer-dist --no-progress
+      - name: Install runtime dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --no-interaction
 
       - name: Get tag
         id: tag
-        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
       - name: Create package
-        run: composer archive --format=zip --file="elp-parser-${{ steps.tag.outputs.tag }}"
+        run: |
+          composer archive \
+            --format=zip \
+            --file="elp-parser-${{ steps.tag.outputs.tag }}"
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@v0.24.2
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: elp-parser-${{ steps.tag.outputs.tag }}.cdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Generate checksums
+        run: |
+          sha256sum \
+            "elp-parser-${{ steps.tag.outputs.tag }}.zip" \
+            "elp-parser-${{ steps.tag.outputs.tag }}.cdx.json" \
+            > SHA256SUMS
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4.2.2
+        with:
+          subject-path: elp-parser-${{ steps.tag.outputs.tag }}.zip
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v4.1.0
+        with:
+          subject-path: elp-parser-${{ steps.tag.outputs.tag }}.zip
+          sbom-path: elp-parser-${{ steps.tag.outputs.tag }}.cdx.json
 
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          files: elp-parser-${{ steps.tag.outputs.tag }}.zip
+          files: |
+            elp-parser-${{ steps.tag.outputs.tag }}.zip
+            elp-parser-${{ steps.tag.outputs.tag }}.cdx.json
+            SHA256SUMS
           draft: false
           prerelease: false
           generate_release_notes: true
