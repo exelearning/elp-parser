@@ -43,5 +43,6 @@ jobs:
           vendor/bin/pest \
             --mutate \
             --parallel \
+            --everything \
             --covered-only \
             --min=80
