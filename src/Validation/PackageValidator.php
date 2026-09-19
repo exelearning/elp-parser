@@ -71,10 +71,12 @@ class PackageValidator
         $this->findDuplicateIds($parser->getBlocks(), 'block', $errors);
         $this->findDuplicateIds($parser->getIdevices(), 'idevice', $errors);
 
-        foreach ([
-            'odeId' => $parser->getProjectId(),
-            'odeVersionId' => $parser->getProjectVersionId(),
-        ] as $label => $identifier) {
+        foreach (
+            [
+                'odeId' => $parser->getProjectId(),
+                'odeVersionId' => $parser->getProjectVersionId(),
+            ] as $label => $identifier
+        ) {
             if ($identifier === null) {
                 continue;
             }
