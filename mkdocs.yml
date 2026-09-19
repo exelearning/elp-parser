@@ -63,6 +63,7 @@ nav:
       - Assets and Package Entries: assets.md
       - Performance: performance.md
       - Cookbook: cookbook.md
+      - Detailed JSON Schema: json-schema.md
   - API Reference: api.md
 
 markdown_extensions:
