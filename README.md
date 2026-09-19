@@ -32,7 +32,7 @@ Parser for eXeLearning project files with support for legacy `contentv3.xml` pro
 - Streaming extraction to avoid loading large assets into memory
 - JSON serialization
 
-For more information, visit the [documentation](https://exelearning.github.io/elp-parser/).
+For more information, visit the [documentation](https://exelearning.github.io/elp-parser/). The repository also includes an `examples/` directory with executable recipes for inspection, validation, assets, diffs, fingerprints and extraction.
 
 ## Requirements
 
@@ -289,6 +289,21 @@ The corpus runner can also be used locally:
 ```bash
 php tests/upstream-compat.php /path/to/exelearning/test/fixtures
 ```
+
+## Project documentation
+
+- [Getting started](docs/getting-started.md)
+- [Supported formats](docs/formats.md)
+- [Validation](docs/validation.md)
+- [Security](docs/security.md)
+- [iDevices](docs/idevices.md)
+- [Assets and package entries](docs/assets.md)
+- [Performance](docs/performance.md)
+- [Cookbook](docs/cookbook.md)
+- [Contributing](CONTRIBUTING.md)
+- [Upgrading](UPGRADING.md)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 

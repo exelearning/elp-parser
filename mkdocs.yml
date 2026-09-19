@@ -53,6 +53,15 @@ theme:
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+  - Formats: formats.md
+  - Guides:
+      - Validation: validation.md
+      - Security: security.md
+      - iDevices: idevices.md
+      - Assets and Package Entries: assets.md
+      - Performance: performance.md
+      - Cookbook: cookbook.md
   - API Reference: api.md
 
 markdown_extensions:
