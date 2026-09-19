@@ -19,8 +19,10 @@ use Exelearning\Archive\ArchiveReader;
 use Exelearning\Asset\AssetReferenceExtractor;
 use Exelearning\Exception\ElpParserException;
 use Exelearning\Exception\UnsupportedFormatException;
+use Exelearning\Model\Project;
 use Exelearning\Parser\LegacyParser;
 use Exelearning\Parser\OdeParser;
+use Exelearning\Support\ProjectInspector;
 use Exelearning\Support\VersionDetector;
 use Exelearning\Support\XmlLoader;
 use Exelearning\Validation\PackageValidator;
@@ -122,6 +124,19 @@ class ELPParser implements JsonSerializable
     public static function fromFile(string $filePath, ?ArchiveLimits $limits = null): self
     {
         return new self($filePath, $limits);
+    }
+
+    /**
+     * Inspect core project metadata without fully normalizing page content.
+     *
+     * @param string             $filePath Project file path.
+     * @param ArchiveLimits|null $limits   Optional archive safety limits.
+     *
+     * @return array<string, mixed>
+     */
+    public static function inspect(string $filePath, ?ArchiveLimits $limits = null): array
+    {
+        return (new ProjectInspector($filePath, $limits))->inspect();
     }
 
     /**
@@ -1049,6 +1064,16 @@ class ELPParser implements JsonSerializable
      *
      * @return array<string, mixed>
      */
+    /**
+     * Get a typed project model without replacing the existing array APIs.
+     *
+     * @return Project
+     */
+    public function getProject(): Project
+    {
+        return Project::fromParser($this);
+    }
+
     public function toDetailedArray(): array
     {
         return [

@@ -50,6 +50,18 @@ composer require exelearning/elp-parser
 
 ## Usage
 
+### Lightweight inspection
+
+For cataloging or indexing, `inspect()` reads archive metadata and the project XML without normalizing pages, iDevices or assets:
+
+```php
+$info = ELPParser::inspect('/path/to/project.elpx');
+
+echo $info['title'];
+echo $info['formatVersion'];
+echo $info['packageProfile'];
+```
+
 ### Basic parsing
 
 ```php
@@ -109,6 +121,8 @@ $pageTree = $parser->getPageTree();
 ```
 
 Direct lookup helpers are also available: `getPageById()`, `getBlockById()`, `getIdeviceById()`, `getProjectId()` and `getProjectVersionId()`.
+
+A parallel typed API is available through `$parser->getProject()`. It returns `Project`, `Page`, `Block`, `Idevice`, `Asset` and `VersionInfo` model objects while the existing array APIs remain unchanged.
 
 Asset references are normalized against the actual ZIP entries. This prevents external URLs and nonexistent paths from being reported as package assets.
 
