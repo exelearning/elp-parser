@@ -19,6 +19,7 @@ The supported PHP matrix is 8.0 through 8.5. CI must remain green on all support
 - Create a focused branch from `main`.
 - Add or update tests for behavior changes.
 - Keep public API changes additive unless a breaking change is explicitly planned for a major release.
+- Public API changes are checked automatically against `origin/main` with Roave Backward Compatibility Check.
 - Update README/API/cookbook documentation when public behavior changes.
 - Keep coverage at or above the configured 90% project and patch thresholds.
 - Use English for source code, comments, commit messages and pull-request descriptions.
