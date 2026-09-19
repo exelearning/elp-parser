@@ -31,20 +31,24 @@ class OdeParser
     private HtmlText $htmlText;
     private IdeviceStateParser $stateParser;
     private bool $normalizeIdeviceState;
+    private ?IdeviceDecoderRegistry $decoderRegistry;
 
     /**
      * @param HtmlText|null           $htmlText              Optional HTML text converter.
      * @param IdeviceStateParser|null $stateParser           Optional iDevice state parser.
-     * @param bool                    $normalizeIdeviceState Normalize structured iDevice state.
+     * @param bool                         $normalizeIdeviceState Normalize structured iDevice state.
+     * @param IdeviceDecoderRegistry|null   $decoderRegistry      Optional custom decoder registry.
      */
     public function __construct(
         ?HtmlText $htmlText = null,
         ?IdeviceStateParser $stateParser = null,
-        bool $normalizeIdeviceState = true
+        bool $normalizeIdeviceState = true,
+        ?IdeviceDecoderRegistry $decoderRegistry = null
     ) {
         $this->htmlText = $htmlText ?? new HtmlText();
         $this->stateParser = $stateParser ?? new IdeviceStateParser();
         $this->normalizeIdeviceState = $normalizeIdeviceState;
+        $this->decoderRegistry = $decoderRegistry;
     }
 
     /**
@@ -184,6 +188,15 @@ class OdeParser
                         'identifier' => $componentProperties['identifier'] ?? '',
                         'cssClass' => $componentProperties['cssClass'] ?? '',
                     ];
+
+                    if ($this->decoderRegistry !== null) {
+                        $custom = $this->decoderRegistry->decode($componentData);
+
+                        if ($custom !== null) {
+                            $componentData['customDecoder'] = $custom['decoder'];
+                            $componentData['customData'] = $custom['data'];
+                        }
+                    }
 
                     $components[] = $componentData;
                     $idevices[] = $componentData;
