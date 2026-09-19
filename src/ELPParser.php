@@ -22,6 +22,7 @@ use Exelearning\Exception\UnsupportedFormatException;
 use Exelearning\Model\Project;
 use Exelearning\Parser\LegacyParser;
 use Exelearning\Parser\OdeParser;
+use Exelearning\Reference\InternalReferenceExtractor;
 use Exelearning\Support\ProjectInspector;
 use Exelearning\Support\VersionDetector;
 use Exelearning\Support\XmlLoader;
@@ -97,6 +98,7 @@ class ELPParser implements JsonSerializable
     private ArchiveLimits $archiveLimits;
     private ArchiveReader $archiveReader;
     private AssetReferenceExtractor $assetExtractor;
+    private InternalReferenceExtractor $internalReferenceExtractor;
 
     /**
      * Create a new parser instance.
@@ -198,6 +200,7 @@ class ELPParser implements JsonSerializable
         }
 
         $this->assetExtractor = new AssetReferenceExtractor($this->archiveEntries);
+        $this->internalReferenceExtractor = new InternalReferenceExtractor();
         $this->assetsDetailed = $this->assetExtractor->extract($this->pages);
         $this->assets = array_map(
             static fn(array $asset): string => (string) $asset['path'],
@@ -981,6 +984,163 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get internal exe-node page references with their origins.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getInternalLinks(): array
+    {
+        return $this->internalReferenceExtractor->extract($this->pages);
+    }
+
+    /**
+     * Get internal page references whose target does not exist.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getBrokenInternalLinks(): array
+    {
+        $pageIds = [];
+
+        foreach ($this->pages as $page) {
+            $id = (string) ($page['id'] ?? '');
+            if ($id !== '') {
+                $pageIds[$id] = true;
+            }
+        }
+
+        return array_values(
+            array_filter(
+                $this->getInternalLinks(),
+                static fn(array $link): bool => !isset(
+                    $pageIds[(string) ($link['targetPageId'] ?? '')]
+                )
+            )
+        );
+    }
+
+    /**
+     * Get the iDevice types used by parsed content.
+     *
+     * @return array<int, string>
+     */
+    public function getUsedIdeviceTypes(): array
+    {
+        $types = [];
+
+        foreach ($this->getIdevices() as $idevice) {
+            $type = (string) ($idevice['type'] ?? '');
+            if ($type !== '') {
+                $types[$type] = true;
+            }
+        }
+
+        $types = array_keys($types);
+        sort($types);
+
+        return $types;
+    }
+
+    /**
+     * Get iDevice runtime directories available in the package.
+     *
+     * @return array<int, string>
+     */
+    public function getAvailableIdeviceTypes(): array
+    {
+        $types = [];
+
+        foreach ($this->archiveEntries as $entry) {
+            if (preg_match('#^idevices/([^/]+)/#', $entry, $matches) === 1) {
+                $types[(string) $matches[1]] = true;
+            }
+        }
+
+        $types = array_keys($types);
+        sort($types);
+
+        return $types;
+    }
+
+    /**
+     * Get used iDevice types without a matching packaged runtime directory.
+     *
+     * @return array<int, string>
+     */
+    public function getMissingIdeviceRuntimes(): array
+    {
+        return array_values(
+            array_diff(
+                $this->getUsedIdeviceTypes(),
+                $this->getAvailableIdeviceTypes()
+            )
+        );
+    }
+
+    /**
+     * Build a categorized manifest of package entries.
+     *
+     * @return array<string, mixed>
+     */
+    public function getPackageManifest(): array
+    {
+        $manifest = [
+            'rootFiles' => [],
+            'themeFiles' => [],
+            'libraryFiles' => [],
+            'ideviceFiles' => [],
+            'resourceFiles' => [],
+            'otherFiles' => [],
+        ];
+
+        foreach ($this->archiveEntries as $entry) {
+            if (str_ends_with($entry, '/')) {
+                continue;
+            }
+
+            if (!str_contains($entry, '/')) {
+                $manifest['rootFiles'][] = $entry;
+                continue;
+            }
+
+            if (str_starts_with($entry, 'theme/')) {
+                $manifest['themeFiles'][] = $entry;
+                continue;
+            }
+
+            if (str_starts_with($entry, 'libs/')) {
+                $manifest['libraryFiles'][] = $entry;
+                continue;
+            }
+
+            if (preg_match('#^idevices/([^/]+)/#', $entry, $matches) === 1) {
+                $type = (string) $matches[1];
+                $manifest['ideviceFiles'][$type][] = $entry;
+                continue;
+            }
+
+            if (str_starts_with($entry, 'content/resources/')) {
+                $manifest['resourceFiles'][] = $entry;
+                continue;
+            }
+
+            $manifest['otherFiles'][] = $entry;
+        }
+
+        foreach (['rootFiles', 'themeFiles', 'libraryFiles', 'resourceFiles', 'otherFiles'] as $key) {
+            sort($manifest[$key]);
+        }
+
+        ksort($manifest['ideviceFiles']);
+
+        return $manifest + [
+            'usedIdeviceTypes' => $this->getUsedIdeviceTypes(),
+            'availableIdeviceTypes' => $this->getAvailableIdeviceTypes(),
+            'missingIdeviceRuntimes' => $this->getMissingIdeviceRuntimes(),
+        ];
+    }
+
+    /**
      * Get the project title.
      *
      * @return string
@@ -1101,6 +1261,9 @@ class ELPParser implements JsonSerializable
             'orphanAssets' => $this->getOrphanAssets(),
             'missingAssets' => $this->getMissingAssets(),
             'brokenReferences' => $this->getBrokenReferences(),
+            'internalLinks' => $this->getInternalLinks(),
+            'brokenInternalLinks' => $this->getBrokenInternalLinks(),
+            'packageManifest' => $this->getPackageManifest(),
             'archiveEntries' => $this->archiveEntries,
         ];
     }

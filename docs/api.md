@@ -82,6 +82,12 @@ Read core format/version/project metadata without fully normalizing pages, iDevi
 - `getMissingAssets(): array`
 - `getBrokenReferences(): array`
 - `getArchiveEntries(): array`
+- `getInternalLinks(): array`
+- `getBrokenInternalLinks(): array`
+- `getUsedIdeviceTypes(): array`
+- `getAvailableIdeviceTypes(): array`
+- `getMissingIdeviceRuntimes(): array`
+- `getPackageManifest(): array`
 
 Asset references are returned only when they resolve to an entry in the project archive. Both the v3 long form (`{{context_path}}/content/resources/...`) and the v4 form (`{{context_path}}/<exportPath>`) are resolved.
 

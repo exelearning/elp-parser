@@ -44,6 +44,8 @@ class PackageValidator
         $this->validateIdentifiers($parser, $errors, $warnings);
         $this->validatePageHierarchy($parser, $errors, $warnings);
         $this->validateOrdersAndRelationships($parser, $errors, $warnings);
+        $this->validateInternalLinks($parser, $errors);
+        $this->validateIdeviceRuntimes($parser, $warnings);
         $this->validateIdeviceState($parser, $warnings);
         $this->validatePackageBaseline($parser, $warnings);
 
@@ -269,6 +271,48 @@ class PackageValidator
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Report internal exe-node links that target missing pages.
+     *
+     * @param ELPParser                       $parser Parsed project.
+     * @param array<int, array<string,mixed>> $errors Validation errors.
+     *
+     * @return void
+     */
+    private function validateInternalLinks(ELPParser $parser, array &$errors): void
+    {
+        foreach ($parser->getBrokenInternalLinks() as $link) {
+            $errors[] = [
+                'code' => 'broken_internal_link',
+                'message' => 'Internal exe-node link targets a page that does not exist.',
+                'context' => $link,
+            ];
+        }
+    }
+
+    /**
+     * Report iDevice types used without a matching packaged runtime.
+     *
+     * @param ELPParser                       $parser Parsed project.
+     * @param array<int, array<string,mixed>> $warnings Validation warnings.
+     *
+     * @return void
+     */
+    private function validateIdeviceRuntimes(ELPParser $parser, array &$warnings): void
+    {
+        if ($parser->isLegacyFormat()) {
+            return;
+        }
+
+        foreach ($parser->getMissingIdeviceRuntimes() as $type) {
+            $warnings[] = [
+                'code' => 'missing_idevice_runtime',
+                'message' => 'An iDevice type is used without a matching packaged runtime directory.',
+                'context' => ['type' => $type],
+            ];
         }
     }
 
