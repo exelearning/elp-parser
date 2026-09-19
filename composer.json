@@ -40,7 +40,7 @@
     },
     "scripts": {
         "test": "vendor/bin/pest",
-        "test:coverage": "vendor/bin/pest --coverage",
+        "test:coverage": "vendor/bin/pest --coverage --coverage-clover coverage.xml --min=90",
         "lint": "phpcs . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php",
         "fix": "phpcbf . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php",
         "analyse": "phpstan analyse --no-progress"
