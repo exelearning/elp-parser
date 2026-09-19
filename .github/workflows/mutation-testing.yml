@@ -40,12 +40,21 @@ jobs:
       - name: Run mutation tests
         env:
           EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
           if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch origin "$BASE_REF"
+            MUTATION_PATHS="$(git diff --name-only --diff-filter=AMR "origin/$BASE_REF...HEAD" -- 'src/*.php' 'src/**/*.php' | paste -sd, -)"
+
+            if [ -z "$MUTATION_PATHS" ]; then
+              echo "No changed PHP source files to mutate."
+              exit 0
+            fi
+
             vendor/bin/pest \
               --mutate \
               --parallel \
-              --changed-only \
+              --path="$MUTATION_PATHS" \
               --covered-only \
               --ignore-min-score-on-zero-mutations \
               --min=80
