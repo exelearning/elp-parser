@@ -44,6 +44,7 @@ class PackageValidator
         $this->validateIdentifiers($parser, $errors, $warnings);
         $this->validatePageHierarchy($parser, $errors, $warnings);
         $this->validateOrdersAndRelationships($parser, $errors, $warnings);
+        $this->validateIdeviceState($parser, $warnings);
         $this->validatePackageBaseline($parser, $warnings);
 
         return [
@@ -268,6 +269,35 @@ class PackageValidator
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Report iDevice state payloads that could not be decoded.
+     *
+     * @param ELPParser                       $parser Parsed project.
+     * @param array<int, array<string,mixed>> $warnings Validation warnings.
+     *
+     * @return void
+     */
+    private function validateIdeviceState(ELPParser $parser, array &$warnings): void
+    {
+        foreach ($parser->getIdevices() as $idevice) {
+            $error = $idevice['stateDecodeError'] ?? null;
+            if (!is_string($error) || $error === '') {
+                continue;
+            }
+
+            $warnings[] = [
+                'code' => 'invalid_idevice_state',
+                'message' => 'An iDevice state payload could not be decoded.',
+                'context' => [
+                    'ideviceId' => $idevice['id'] ?? '',
+                    'ideviceType' => $idevice['type'] ?? '',
+                    'storagePattern' => $idevice['storagePattern'] ?? '',
+                    'error' => $error,
+                ],
+            ];
         }
     }
 
