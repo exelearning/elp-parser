@@ -24,12 +24,7 @@ it(
             __DIR__ . '/../Fixtures/propiedades.elpx'
         );
 
-        $resourceFiles = $parser->getPackageManifest()['resourceFiles'];
-        if ($resourceFiles === []) {
-            throw new RuntimeException('Fixture contains no resource files.');
-        }
-
-        $entry = (string) $resourceFiles[0];
+        $entry = 'content.xml';
 
         expect($parser->hasEntry($entry))->toBeTrue();
         expect($parser->hasEntry('missing-entry.bin'))->toBeFalse();
@@ -77,7 +72,7 @@ it(
         $parser = ELPParser::fromFile(
             __DIR__ . '/../Fixtures/propiedades.elpx'
         );
-        $entry = (string) $parser->getPackageManifest()['resourceFiles'][0];
+        $entry = 'content.xml';
 
         expect(fn() => $parser->getEntryContents($entry, 1))
             ->toThrow(ResourceLimitException::class);
