@@ -193,6 +193,22 @@ $parser = ELPParser::fromFile('/path/to/project.elpx', $limits);
 
 The defaults are 20,000 entries, 1 GiB per entry, approximately 2 GiB total uncompressed data, 64 MiB for the project XML, and a maximum compression ratio of 1000:1.
 
+### Fingerprints and project diffs
+
+Exact archive bytes and normalized logical content use separate fingerprints:
+
+```php
+$archiveHash = $parser->getArchiveFingerprint();
+$contentHash = $parser->getContentFingerprint();
+
+$same = $parser->hasSameContentAs($otherParser);
+$diff = $parser->diff($otherParser);
+```
+
+The normalized content fingerprint ignores volatile package identity/version fields such as `odeId`, `odeVersionId` and the eXeLearning application version. It keeps parsed project structure and includes hashes of project resource bytes. This makes it suitable for change detection without treating ZIP packaging differences as content changes.
+
+The semantic diff reports metadata, page, block, iDevice and resource additions/removals/changes.
+
 ### Export JSON
 
 ```php
