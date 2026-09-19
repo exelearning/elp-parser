@@ -32,6 +32,21 @@ Lightweight inspection for stream input.
 
 Lightweight inspection for in-memory project bytes.
 
+### Detection and configuration
+
+- `supports(string $filePath, ArchiveLimits|ParserOptions|null $options = null): bool`
+- `identify(string $filePath, ArchiveLimits|ParserOptions|null $options = null): string`
+- `probe(string $filePath, ArchiveLimits|ParserOptions|null $options = null): array`
+- `getOptions(): ParserOptions`
+
+`ParserOptions` groups archive limits with optional expensive derived-data features:
+
+- `parseAssets`
+- `collectStrings`
+- `normalizeIdeviceState`
+
+Existing calls that pass `ArchiveLimits` directly remain supported.
+
 ### Version and format
 
 - `getVersion(): int` — detected major version kept for backward compatibility.

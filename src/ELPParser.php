@@ -99,6 +99,7 @@ class ELPParser implements JsonSerializable
     protected string $learningResourceType = '';
 
     private ArchiveLimits $archiveLimits;
+    private ParserOptions $options;
     private ArchiveReader $archiveReader;
     private AssetReferenceExtractor $assetExtractor;
     private InternalReferenceExtractor $internalReferenceExtractor;
@@ -146,14 +147,20 @@ class ELPParser implements JsonSerializable
     /**
      * Create a new parser instance.
      *
-     * @param string             $filePath Project file path.
-     * @param ArchiveLimits|null $limits   Optional archive safety limits.
+     * ArchiveLimits remains accepted as the second argument for backward
+     * compatibility. ParserOptions is the preferred extensible configuration.
+     *
+     * @param string                           $filePath Project file path.
+     * @param ArchiveLimits|ParserOptions|null $options  Parser options or legacy limits.
      */
-    public function __construct(string $filePath, ?ArchiveLimits $limits = null)
-    {
+    public function __construct(
+        string $filePath,
+        ArchiveLimits|ParserOptions|null $options = null
+    ) {
         $this->filePath = $filePath;
         $this->sourceExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        $this->archiveLimits = $limits ?? new ArchiveLimits();
+        $this->options = self::normalizeOptions($options);
+        $this->archiveLimits = $this->options->archiveLimits;
         $this->archiveReader = new ArchiveReader($filePath, $this->archiveLimits);
         $this->parse();
     }
@@ -161,14 +168,16 @@ class ELPParser implements JsonSerializable
     /**
      * Create a parser from a file path.
      *
-     * @param string             $filePath Project file path.
-     * @param ArchiveLimits|null $limits   Optional archive safety limits.
+     * @param string                           $filePath Project file path.
+     * @param ArchiveLimits|ParserOptions|null $options  Parser options or legacy limits.
      *
      * @return self
      */
-    public static function fromFile(string $filePath, ?ArchiveLimits $limits = null): self
-    {
-        return new self($filePath, $limits);
+    public static function fromFile(
+        string $filePath,
+        ArchiveLimits|ParserOptions|null $options = null
+    ): self {
+        return new self($filePath, $options);
     }
 
     /**
@@ -183,17 +192,17 @@ class ELPParser implements JsonSerializable
     public static function fromStream(
         mixed $stream,
         string $extension = 'elpx',
-        ?ArchiveLimits $limits = null
+        ArchiveLimits|ParserOptions|null $options = null
     ): self {
-        $limits = $limits ?? new ArchiveLimits();
+        $parserOptions = self::normalizeOptions($options);
         $path = TemporaryProjectFile::fromStream(
             $stream,
             $extension,
-            $limits->maxTotalBytes
+            $parserOptions->archiveLimits->maxTotalBytes
         );
 
         try {
-            $parser = new self($path, $limits);
+            $parser = new self($path, $parserOptions);
             $parser->ownedTemporaryFile = $path;
 
             return $parser;
@@ -215,17 +224,17 @@ class ELPParser implements JsonSerializable
     public static function fromContents(
         string $contents,
         string $extension = 'elpx',
-        ?ArchiveLimits $limits = null
+        ArchiveLimits|ParserOptions|null $options = null
     ): self {
-        $limits = $limits ?? new ArchiveLimits();
+        $parserOptions = self::normalizeOptions($options);
         $path = TemporaryProjectFile::fromContents(
             $contents,
             $extension,
-            $limits->maxTotalBytes
+            $parserOptions->archiveLimits->maxTotalBytes
         );
 
         try {
-            $parser = new self($path, $limits);
+            $parser = new self($path, $parserOptions);
             $parser->ownedTemporaryFile = $path;
 
             return $parser;
@@ -243,9 +252,65 @@ class ELPParser implements JsonSerializable
      *
      * @return array<string, mixed>
      */
-    public static function inspect(string $filePath, ?ArchiveLimits $limits = null): array
-    {
+    public static function inspect(
+        string $filePath,
+        ArchiveLimits|ParserOptions|null $options = null
+    ): array {
+        $limits = self::normalizeOptions($options)->archiveLimits;
+
         return (new ProjectInspector($filePath, $limits))->inspect();
+    }
+
+    /**
+     * Alias for lightweight project inspection.
+     *
+     * @param string                           $filePath Project file path.
+     * @param ArchiveLimits|ParserOptions|null $options  Parser options or legacy limits.
+     *
+     * @return array<string, mixed>
+     */
+    public static function probe(
+        string $filePath,
+        ArchiveLimits|ParserOptions|null $options = null
+    ): array {
+        return self::inspect($filePath, $options);
+    }
+
+    /**
+     * Determine whether a file is a supported eXeLearning project package.
+     *
+     * @param string                           $filePath Project file path.
+     * @param ArchiveLimits|ParserOptions|null $options  Parser options or legacy limits.
+     *
+     * @return bool
+     */
+    public static function supports(
+        string $filePath,
+        ArchiveLimits|ParserOptions|null $options = null
+    ): bool {
+        try {
+            self::inspect($filePath, $options);
+            return true;
+        } catch (ElpParserException) {
+            return false;
+        }
+    }
+
+    /**
+     * Identify the package compatibility profile.
+     *
+     * @param string                           $filePath Project file path.
+     * @param ArchiveLimits|ParserOptions|null $options  Parser options or legacy limits.
+     *
+     * @return string
+     */
+    public static function identify(
+        string $filePath,
+        ArchiveLimits|ParserOptions|null $options = null
+    ): string {
+        $info = self::inspect($filePath, $options);
+
+        return (string) ($info['packageProfile'] ?? 'unknown');
     }
 
     /**
@@ -260,17 +325,17 @@ class ELPParser implements JsonSerializable
     public static function inspectStream(
         mixed $stream,
         string $extension = 'elpx',
-        ?ArchiveLimits $limits = null
+        ArchiveLimits|ParserOptions|null $options = null
     ): array {
-        $limits = $limits ?? new ArchiveLimits();
+        $parserOptions = self::normalizeOptions($options);
         $path = TemporaryProjectFile::fromStream(
             $stream,
             $extension,
-            $limits->maxTotalBytes
+            $parserOptions->archiveLimits->maxTotalBytes
         );
 
         try {
-            return self::inspect($path, $limits);
+            return self::inspect($path, $parserOptions);
         } finally {
             @unlink($path);
         }
@@ -288,20 +353,47 @@ class ELPParser implements JsonSerializable
     public static function inspectContents(
         string $contents,
         string $extension = 'elpx',
-        ?ArchiveLimits $limits = null
+        ArchiveLimits|ParserOptions|null $options = null
     ): array {
-        $limits = $limits ?? new ArchiveLimits();
+        $parserOptions = self::normalizeOptions($options);
         $path = TemporaryProjectFile::fromContents(
             $contents,
             $extension,
-            $limits->maxTotalBytes
+            $parserOptions->archiveLimits->maxTotalBytes
         );
 
         try {
-            return self::inspect($path, $limits);
+            return self::inspect($path, $parserOptions);
         } finally {
             @unlink($path);
         }
+    }
+
+    /**
+     * Get the normalized parser options for this instance.
+     *
+     * @return ParserOptions
+     */
+    public function getOptions(): ParserOptions
+    {
+        return $this->options;
+    }
+
+    /**
+     * Normalize legacy ArchiveLimits and modern ParserOptions arguments.
+     *
+     * @param ArchiveLimits|ParserOptions|null $options Parser options or legacy limits.
+     *
+     * @return ParserOptions
+     */
+    private static function normalizeOptions(
+        ArchiveLimits|ParserOptions|null $options
+    ): ParserOptions {
+        if ($options instanceof ParserOptions) {
+            return $options;
+        }
+
+        return new ParserOptions($options);
     }
 
     /**
@@ -342,7 +434,9 @@ class ELPParser implements JsonSerializable
             $this->legacyData = is_array($parsed['data'] ?? null) ? $parsed['data'] : [];
             $this->hydrateCommonData($parsed);
         } else {
-            $parsed = (new OdeParser())->parse($xml);
+            $parsed = (new OdeParser(
+                normalizeIdeviceState: $this->options->normalizeIdeviceState
+            ))->parse($xml);
             $this->contentSchemaVersion = is_string($parsed['schemaVersion'] ?? null)
                 ? $parsed['schemaVersion']
                 : null;
@@ -364,7 +458,11 @@ class ELPParser implements JsonSerializable
 
         $this->assetExtractor = new AssetReferenceExtractor($this->archiveEntries);
         $this->internalReferenceExtractor = new InternalReferenceExtractor();
-        $this->assetsDetailed = $this->assetExtractor->extract($this->pages);
+
+        if ($this->options->parseAssets) {
+            $this->assetsDetailed = $this->assetExtractor->extract($this->pages);
+        }
+
         $this->assets = array_map(
             static fn(array $asset): string => (string) $asset['path'],
             $this->assetsDetailed
@@ -442,7 +540,10 @@ class ELPParser implements JsonSerializable
         $this->license = (string) ($parsed['license'] ?? '');
         $this->language = (string) ($parsed['language'] ?? '');
         $this->learningResourceType = (string) ($parsed['learningResourceType'] ?? '');
-        $this->strings = is_array($parsed['strings'] ?? null) ? $parsed['strings'] : [];
+        $this->strings = $this->options->collectStrings
+            && is_array($parsed['strings'] ?? null)
+            ? $parsed['strings']
+            : [];
         $this->pages = is_array($parsed['pages'] ?? null) ? $parsed['pages'] : [];
     }
 

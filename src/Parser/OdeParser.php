@@ -30,17 +30,21 @@ class OdeParser
 {
     private HtmlText $htmlText;
     private IdeviceStateParser $stateParser;
+    private bool $normalizeIdeviceState;
 
     /**
-     * @param HtmlText|null            $htmlText    Optional HTML text converter.
-     * @param IdeviceStateParser|null  $stateParser Optional iDevice state parser.
+     * @param HtmlText|null           $htmlText              Optional HTML text converter.
+     * @param IdeviceStateParser|null $stateParser           Optional iDevice state parser.
+     * @param bool                    $normalizeIdeviceState Normalize structured iDevice state.
      */
     public function __construct(
         ?HtmlText $htmlText = null,
-        ?IdeviceStateParser $stateParser = null
+        ?IdeviceStateParser $stateParser = null,
+        bool $normalizeIdeviceState = true
     ) {
         $this->htmlText = $htmlText ?? new HtmlText();
         $this->stateParser = $stateParser ?? new IdeviceStateParser();
+        $this->normalizeIdeviceState = $normalizeIdeviceState;
     }
 
     /**
@@ -156,7 +160,13 @@ class OdeParser
                     $jsonPropertiesRaw = isset($component->jsonProperties)
                         ? trim((string) $component->jsonProperties)
                         : '';
-                    $state = $this->stateParser->parse($html, $jsonPropertiesRaw);
+                    $state = $this->normalizeIdeviceState
+                        ? $this->stateParser->parse($html, $jsonPropertiesRaw)
+                        : [
+                            'storagePattern' => 'disabled',
+                            'data' => [],
+                            'decodeError' => null,
+                        ];
 
                     $componentData = [
                         'id' => isset($component->odeIdeviceId) ? (string) $component->odeIdeviceId : '',

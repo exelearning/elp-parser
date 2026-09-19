@@ -81,6 +81,37 @@ $parserFromBytes = ELPParser::fromContents($bytes, 'elpx');
 
 Temporary files owned by parser instances are removed automatically. `inspectStream()` and `inspectContents()` provide the corresponding lightweight inspection APIs.
 
+### Detect and identify packages
+
+Use the lightweight detection helpers before full parsing when the input type is unknown:
+
+```php
+if (ELPParser::supports($path)) {
+    echo ELPParser::identify($path); // legacy-v2, elpx-v4, ...
+    $info = ELPParser::probe($path); // alias of lightweight inspect()
+}
+```
+
+### Parser options
+
+`ArchiveLimits` remains accepted as the second argument for backward compatibility. New feature switches use `ParserOptions`:
+
+```php
+use Exelearning\Archive\ArchiveLimits;
+use Exelearning\ParserOptions;
+
+$options = new ParserOptions(
+    archiveLimits: new ArchiveLimits(maxXmlBytes: 32 * 1024 * 1024),
+    parseAssets: false,
+    collectStrings: false,
+    normalizeIdeviceState: false
+);
+
+$parser = ELPParser::fromFile($path, $options);
+```
+
+Disable work only when the corresponding derived data is not needed.
+
 ### Lightweight inspection
 
 For cataloging or indexing, `inspect()` reads archive metadata and the project XML without normalizing pages, iDevices or assets:
