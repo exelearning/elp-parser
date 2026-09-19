@@ -60,6 +60,7 @@ nav:
       - Validation: validation.md
       - Security: security.md
       - Release Supply Chain: supply-chain.md
+      - Backward Compatibility: backward-compatibility.md
       - iDevices: idevices.md
       - Assets and Package Entries: assets.md
       - Performance: performance.md
