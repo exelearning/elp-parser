@@ -149,6 +149,96 @@ class ArchiveReader
     }
 
     /**
+     * Hash the complete archive file.
+     *
+     * @param string $algorithm Hash algorithm.
+     *
+     * @return string
+     */
+    public function hashArchive(string $algorithm = 'sha256'): string
+    {
+        $this->assertHashAlgorithm($algorithm);
+
+        $hash = hash_file($algorithm, $this->filePath);
+        if ($hash === false) {
+            throw new InvalidArchiveException('Unable to hash project archive.');
+        }
+
+        return $hash;
+    }
+
+    /**
+     * Hash one ZIP entry without loading it entirely into memory.
+     *
+     * @param string $entryName Entry name.
+     * @param string $algorithm Hash algorithm.
+     *
+     * @return string
+     */
+    public function hashEntry(
+        string $entryName,
+        string $algorithm = 'sha256'
+    ): string {
+        $this->assertHashAlgorithm($algorithm);
+        $zip = $this->openArchive();
+
+        try {
+            $index = $zip->locateName($entryName);
+            if ($index === false) {
+                throw new InvalidArchiveException('ZIP entry not found: ' . $entryName);
+            }
+
+            $stat = $zip->statIndex($index);
+            if (
+                is_array($stat)
+                && (int) ($stat['size'] ?? 0) > $this->limits->maxEntryBytes
+            ) {
+                throw new ResourceLimitException(
+                    'ZIP entry exceeds the configured read limit: ' . $entryName
+                );
+            }
+
+            $stream = $zip->getStream($entryName);
+            if ($stream === false) {
+                throw new InvalidArchiveException('Unable to read ZIP entry: ' . $entryName);
+            }
+
+            $context = hash_init($algorithm);
+            $read = 0;
+
+            try {
+                while (!feof($stream)) {
+                    $chunk = fread($stream, 1048576);
+                    if ($chunk === false) {
+                        throw new InvalidArchiveException(
+                            'Unable to read ZIP entry: ' . $entryName
+                        );
+                    }
+
+                    if ($chunk === '') {
+                        continue;
+                    }
+
+                    $read += strlen($chunk);
+                    if ($read > $this->limits->maxEntryBytes) {
+                        throw new ResourceLimitException(
+                            'ZIP entry exceeds the configured read limit: ' . $entryName
+                        );
+                    }
+
+                    hash_update($context, $chunk);
+                }
+            } finally {
+                fclose($stream);
+            }
+
+            return hash_final($context);
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
      * Extract all entries while preserving configured resource limits.
      *
      * @param string $destinationPath Destination directory.
@@ -247,6 +337,22 @@ class ArchiveReader
             }
         } finally {
             $zip->close();
+        }
+    }
+
+    /**
+     * Validate a requested hash algorithm.
+     *
+     * @param string $algorithm Hash algorithm.
+     *
+     * @return void
+     */
+    private function assertHashAlgorithm(string $algorithm): void
+    {
+        if (!in_array($algorithm, hash_algos(), true)) {
+            throw new InvalidArchiveException(
+                'Unsupported hash algorithm: ' . $algorithm
+            );
         }
     }
 

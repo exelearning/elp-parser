@@ -18,7 +18,9 @@ use Exelearning\Archive\ArchiveLimits;
 use Exelearning\Archive\ArchiveReader;
 use Exelearning\Asset\AssetReferenceExtractor;
 use Exelearning\Exception\ElpParserException;
+use Exelearning\Diff\ProjectDiffer;
 use Exelearning\Exception\UnsupportedFormatException;
+use Exelearning\Fingerprint\FingerprintBuilder;
 use Exelearning\Model\Project;
 use Exelearning\Parser\LegacyParser;
 use Exelearning\Parser\OdeParser;
@@ -1469,6 +1471,10 @@ class ELPParser implements JsonSerializable
             'internalLinks' => $this->getInternalLinks(),
             'brokenInternalLinks' => $this->getBrokenInternalLinks(),
             'packageManifest' => $this->getPackageManifest(),
+            'fingerprints' => [
+                'archive' => $this->getArchiveFingerprint(),
+                'content' => $this->getContentFingerprint(),
+            ],
             'archiveEntries' => $this->archiveEntries,
         ];
     }
@@ -1531,6 +1537,78 @@ class ELPParser implements JsonSerializable
         }
 
         return $json;
+    }
+
+    /**
+     * Get an exact fingerprint of the archive bytes.
+     *
+     * @param string $algorithm Hash algorithm.
+     *
+     * @return string
+     */
+    public function getArchiveFingerprint(string $algorithm = 'sha256'): string
+    {
+        return $this->archiveReader->hashArchive($algorithm);
+    }
+
+    /**
+     * Get a fingerprint of one archive entry without loading it into memory.
+     *
+     * @param string $entryName Entry path.
+     * @param string $algorithm Hash algorithm.
+     *
+     * @return string
+     */
+    public function getArchiveEntryFingerprint(
+        string $entryName,
+        string $algorithm = 'sha256'
+    ): string {
+        return $this->archiveReader->hashEntry($entryName, $algorithm);
+    }
+
+    /**
+     * Get a deterministic normalized logical-content fingerprint.
+     *
+     * @param string $algorithm Hash algorithm.
+     *
+     * @return string
+     */
+    public function getContentFingerprint(string $algorithm = 'sha256'): string
+    {
+        return (new FingerprintBuilder())->build($this, $algorithm);
+    }
+
+    /**
+     * Determine whether another parsed project has the same normalized content.
+     *
+     * @param ELPParser $other     Project to compare.
+     * @param string    $algorithm Hash algorithm.
+     *
+     * @return bool
+     */
+    public function hasSameContentAs(
+        ELPParser $other,
+        string $algorithm = 'sha256'
+    ): bool {
+        return hash_equals(
+            $this->getContentFingerprint($algorithm),
+            $other->getContentFingerprint($algorithm)
+        );
+    }
+
+    /**
+     * Compare this project with another parsed project.
+     *
+     * @param ELPParser $other     Project to compare.
+     * @param string    $algorithm Hash algorithm.
+     *
+     * @return array<string, mixed>
+     */
+    public function diff(
+        ELPParser $other,
+        string $algorithm = 'sha256'
+    ): array {
+        return (new ProjectDiffer())->diff($this, $other, $algorithm);
     }
 
     /**
