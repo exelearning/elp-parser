@@ -47,12 +47,16 @@ class OdeParser
      */
     public function parse(SimpleXMLElement $xml): array
     {
+        $userPreferences = $this->readKeyValueNodes(
+            $this->xpath($xml, './x:userPreferences/x:userPreference')
+        );
         $resources = $this->readKeyValueNodes($this->xpath($xml, './x:odeResources/x:odeResource'));
         $properties = $this->readKeyValueNodes($this->xpath($xml, './x:odeProperties/x:odeProperty'));
         $pages = $this->collectPages($xml);
 
         return [
             'schemaVersion' => isset($xml['version']) ? (string) $xml['version'] : null,
+            'userPreferences' => $userPreferences,
             'resources' => $resources,
             'properties' => $properties,
             'title' => (string) ($properties['pp_title'] ?? ''),
