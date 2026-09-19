@@ -2,32 +2,36 @@
 
 Line coverage measures whether code executes. Mutation testing measures whether the test suite can detect meaningful behavioral changes.
 
-The project uses Infection 0.35.4 with the default mutator profile.
+The project uses Pest's native mutation testing on PHP 8.4.
 
-Configured quality gates:
+Configured quality gate:
 
-- minimum MSI: **75%**;
-- minimum covered-code MSI: **85%**;
-- maximum timed-out mutants: **0**.
+- minimum mutation score: **80%**;
+- only covered code is mutated, because line coverage is enforced separately at 90%.
 
 ## Pull requests
 
-PRs that change source/tests run Infection only against changed source lines relative to the PR base branch. This keeps review feedback focused and execution time bounded.
+PRs that modify source, tests or test configuration run:
 
-Escaped mutants are emitted as GitHub annotations.
+```bash
+vendor/bin/pest --mutate --parallel --covered-only --min=80
+```
 
-## Full mutation run
+This keeps mutation quality as a required code-review signal while the regular PHP 8.0–8.5 matrix continues to validate runtime compatibility.
 
-A complete mutation run over `src/` executes weekly and can also be started manually with `workflow_dispatch`.
+## Scheduled and manual runs
 
-The mutation tool runs only in a dedicated PHP 8.4 job. Infection's own PHP requirement therefore does not change the parser's PHP 8.0 runtime support.
+The same mutation gate runs weekly and can be started manually with `workflow_dispatch`.
+
+## Why PHP 8.4 only?
+
+Mutation tooling has a newer PHP requirement than the parser itself. Keeping mutation testing in a dedicated PHP 8.4 job avoids changing the library's PHP 8.0 runtime support.
 
 ## Local use
 
-Download the pinned Infection PHAR, verify its SHA-256 checksum, install project dependencies, then run:
+On a development environment that resolves Pest 5:
 
 ```bash
-php infection.phar --threads=max
+composer update
+vendor/bin/pest --mutate --parallel --covered-only --min=80
 ```
-
-The committed `infection.json` contains the shared thresholds and source/test-runner configuration.
