@@ -270,6 +270,37 @@ $detailed = $parser->toDetailedArray();
 
 The existing JSON export remains compact. The detailed representation adds format/version information, metadata, ODE preferences/resources/properties, pages and page tree, blocks, iDevices, assets and archive entries.
 
+### Read or stream individual entries
+
+For large assets, use stream access instead of loading the complete entry into memory:
+
+```php
+if ($parser->hasEntry('content/resources/video.mp4')) {
+    $output = fopen('/tmp/video.mp4', 'wb');
+
+    try {
+        $parser->copyEntryToStream(
+            'content/resources/video.mp4',
+            $output
+        );
+    } finally {
+        fclose($output);
+    }
+}
+
+$smallFile = $parser->getEntryContents(
+    'content/resources/config.json',
+    1024 * 1024
+);
+
+$parser->extractEntry(
+    'content/resources/image.png',
+    '/tmp/image.png'
+);
+```
+
+Per-entry reads and copies honor configured archive limits and reject unsafe ZIP entry paths/symlinks.
+
 ### Extract project files
 
 ```php
