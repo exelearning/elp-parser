@@ -54,6 +54,7 @@ class ELPParser implements JsonSerializable
 
     protected bool $hasRootDtd = false;
     protected string $resourceLayout = 'none';
+    protected string $resourceProfile = 'none';
 
     /** @var array<string, mixed> */
     protected array $legacyData = [];
@@ -128,6 +129,7 @@ class ELPParser implements JsonSerializable
         $this->archiveEntries = $this->archiveReader->inspect();
         $this->hasRootDtd = in_array('content.dtd', $this->archiveEntries, true);
         $this->resourceLayout = $this->detectResourceLayout($this->archiveEntries);
+        $this->resourceProfile = $this->detectResourceProfile($this->archiveEntries);
 
         if (in_array('contentv3.xml', $this->archiveEntries, true)) {
             $this->contentFormat = 'legacy-contentv3';
@@ -238,6 +240,61 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Detect the resource layout profile used by modern packages.
+     *
+     * eXeLearning 3 commonly stored assets in per-asset ODE-ID directories,
+     * while eXeLearning 4 stores assets directly under content/resources/
+     * and preserves user-created folders.
+     *
+     * @param array<int, string> $entries Archive entry names.
+     *
+     * @return string
+     */
+    private function detectResourceProfile(array $entries): string
+    {
+        $hasV3UuidResources = false;
+        $hasV4TreeResources = false;
+        $hasLegacyTempPaths = false;
+
+        foreach ($entries as $entry) {
+            if (str_starts_with($entry, 'files/tmp/')) {
+                $hasLegacyTempPaths = true;
+            }
+
+            if (!str_starts_with($entry, 'content/resources/') || str_ends_with($entry, '/')) {
+                continue;
+            }
+
+            $relativePath = substr($entry, strlen('content/resources/'));
+            $firstSegment = explode('/', $relativePath, 2)[0] ?? '';
+
+            if (preg_match('/^[0-9]{14}[A-Z0-9]{6}$/', $firstSegment) === 1) {
+                $hasV3UuidResources = true;
+            } else {
+                $hasV4TreeResources = true;
+            }
+        }
+
+        if ($hasV3UuidResources && $hasV4TreeResources) {
+            return 'mixed-modern-resources';
+        }
+
+        if ($hasV3UuidResources) {
+            return 'v3-uuid-resources';
+        }
+
+        if ($hasV4TreeResources) {
+            return 'v4-resource-tree';
+        }
+
+        if ($hasLegacyTempPaths) {
+            return 'legacy-temp-paths';
+        }
+
+        return 'none';
+    }
+
+    /**
      * Return signals used by version detection.
      *
      * @return array<string, mixed>
@@ -250,6 +307,7 @@ class ELPParser implements JsonSerializable
             'contentFile' => $this->contentFile,
             'rootDtd' => $this->hasRootDtd,
             'resourceLayout' => $this->resourceLayout,
+            'resourceProfile' => $this->resourceProfile,
         ];
     }
 
@@ -294,6 +352,26 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get the broad project format family.
+     *
+     * @return string
+     */
+    public function getFormatFamily(): string
+    {
+        return $this->isLegacyFormat() ? 'legacy' : 'ode';
+    }
+
+    /**
+     * Get the internal format version independently from the application version.
+     *
+     * @return string|null
+     */
+    public function getFormatVersion(): ?string
+    {
+        return $this->isLegacyFormat() ? null : $this->contentSchemaVersion;
+    }
+
+    /**
      * Get the XML entry name used by the package.
      *
      * @return string
@@ -324,6 +402,34 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get the raw eXeLearning application version declared by the package.
+     *
+     * @return string|null
+     */
+    public function getApplicationVersion(): ?string
+    {
+        return $this->exeVersion;
+    }
+
+    /**
+     * Get a compatibility profile for the parsed package.
+     *
+     * @return string
+     */
+    public function getPackageProfile(): string
+    {
+        if ($this->isLegacyFormat()) {
+            return 'legacy-v2';
+        }
+
+        $prefix = $this->sourceExtension === 'elpx' ? 'elpx' : 'ode';
+
+        return $this->version >= 3
+            ? $prefix . '-v' . $this->version
+            : $prefix . '-modern';
+    }
+
+    /**
      * Determine whether the project uses the legacy contentv3 format.
      *
      * @return bool
@@ -351,6 +457,16 @@ class ELPParser implements JsonSerializable
     public function getResourceLayout(): string
     {
         return $this->resourceLayout;
+    }
+
+    /**
+     * Get the detected modern resource storage profile.
+     *
+     * @return string
+     */
+    public function getResourceProfile(): string
+    {
+        return $this->resourceProfile;
     }
 
     /**
@@ -883,8 +999,13 @@ class ELPParser implements JsonSerializable
                         'container' => $this->sourceExtension,
                         'content_file' => $this->contentFile,
                         'content_format' => $this->contentFormat,
+                        'format_family' => $this->getFormatFamily(),
                         'schema_version' => $this->contentSchemaVersion ?? '',
+                        'format_version' => $this->getFormatVersion() ?? '',
+                        'application_version' => $this->getApplicationVersion() ?? '',
+                        'package_profile' => $this->getPackageProfile(),
                         'resource_layout' => $this->resourceLayout,
+                        'resource_profile' => $this->resourceProfile,
                         'has_root_dtd' => $this->hasRootDtd,
                         'likely_version_4' => $this->isLikelyVersion4Package(),
                     ],
