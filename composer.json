@@ -1,9 +1,10 @@
 {
     "name": "exelearning/elp-parser",
-    "description": "Parse eXeLearning .elp files",
+    "description": "Parse eXeLearning .elp and .elpx files",
     "keywords": [
         "exelearning",
         "elp",
+        "elpx",
         "parser"
     ],
     "license": "MIT",
@@ -14,10 +15,15 @@
             "role": "Developer"
         }
     ],
-    "scripts": {
-        "test": "vendor/bin/pest",
-        "lint": "phpcs . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php",
-        "fix": "phpcbf . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php"
+    "require": {
+        "php": "^8.0",
+        "ext-simplexml": "*",
+        "ext-zip": "*"
+    },
+    "require-dev": {
+        "pestphp/pest": "^1.23 || ^2.36 || ^3.8 || ^4.7 || ^5.2",
+        "phpstan/phpstan": "^2.2",
+        "squizlabs/php_codesniffer": "^4.0"
     },
     "autoload": {
         "psr-4": {
@@ -26,22 +32,21 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Exelearning\\ElpParser\\Tests\\": "tests"
+            "Exelearning\\ElpParser\\Tests\\": "tests/"
         }
     },
-    "require": {
-        "php": "^8.0"
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test:coverage": "vendor/bin/pest --coverage",
+        "lint": "phpcs . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php",
+        "fix": "phpcbf . --ignore=vendor/,assets/,node_modules/,tests/js/ --colors --warning-severity=0 --extensions=php",
+        "analyse": "phpstan analyse --no-progress"
     },
     "config": {
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
-    },
-    "require-dev": {
-        "pestphp/pest": "*",
-        "phpunit/phpunit": "*",
-        "squizlabs/php_codesniffer": "*"
     },
     "archive": {
         "exclude": [
@@ -53,5 +58,5 @@
             "test.php",
             "vendor"
         ]
-    }    
+    }
 }

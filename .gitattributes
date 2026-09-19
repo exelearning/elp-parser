@@ -4,15 +4,13 @@
 /.gitattributes          export-ignore
 /.github/                export-ignore
 /.gitignore              export-ignore
-/.gitignore              export-ignore
-/.php-cs-fixer.dist.php  export-ignore
 /.readthedocs.yaml       export-ignore
 /docs/                   export-ignore
 /mkdocs.yml              export-ignore
+/phpstan.neon            export-ignore
 /tests/                  export-ignore
 /vendor/                 export-ignore
 composer.lock            export-ignore
 phpunit.xml              export-ignore
 README.md                export-ignore
-renovate.json            export-ignore
 test.php                 export-ignore
