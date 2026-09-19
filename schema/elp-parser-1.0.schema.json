@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/exelearning/elp-parser/schema/elp-parser-1.0.schema.json",
+  "title": "eXeLearning ELP Parser detailed representation",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "summary",
+    "format",
+    "versionInfo",
+    "metadata",
+    "pages",
+    "blocks",
+    "idevices",
+    "assets",
+    "packageManifest",
+    "fingerprints",
+    "archiveEntries"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "summary": {
+      "type": "object",
+      "required": ["version", "title", "description", "author", "license", "language", "learningResourceType", "strings"],
+      "properties": {
+        "version": {"type": "integer"},
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "author": {"type": "string"},
+        "license": {"type": "string"},
+        "language": {"type": "string"},
+        "learningResourceType": {"type": "string"},
+        "strings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "format": {
+      "type": "object",
+      "required": ["family", "version", "contentFormat", "contentFile", "sourceExtension", "packageProfile", "resourceLayout", "resourceProfile"],
+      "properties": {
+        "family": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "contentFormat": {"type": "string"},
+        "contentFile": {"type": "string"},
+        "sourceExtension": {"type": "string"},
+        "packageProfile": {"type": "string"},
+        "resourceLayout": {"type": "string"},
+        "resourceProfile": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "versionInfo": {"type": "object"},
+    "metadata": {"type": "object"},
+    "userPreferences": {"type": "object"},
+    "odeResources": {"type": "object"},
+    "odeProperties": {"type": "object"},
+    "pages": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/page"}
+    },
+    "pageTree": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "blocks": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/block"}
+    },
+    "idevices": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/idevice"}
+    },
+    "assets": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/asset"}
+    },
+    "orphanAssets": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "missingAssets": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "brokenReferences": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "internalLinks": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "brokenInternalLinks": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "packageManifest": {"type": "object"},
+    "fingerprints": {
+      "type": "object",
+      "required": ["archive", "content"],
+      "properties": {
+        "archive": {"type": "string"},
+        "content": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "archiveEntries": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "required": ["id", "parentId", "title", "blocks", "idevices"],
+      "properties": {
+        "id": {"type": "string"},
+        "parentId": {"type": "string"},
+        "title": {"type": "string"},
+        "blocks": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/block"}
+        },
+        "idevices": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/idevice"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "block": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {"type": "string"},
+        "pageId": {"type": "string"},
+        "name": {"type": "string"},
+        "components": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/idevice"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "idevice": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {"type": "string"},
+        "type": {"type": "string"},
+        "storagePattern": {"type": "string"},
+        "stateDecodeError": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "asset": {
+      "type": "object",
+      "required": ["path", "type"],
+      "properties": {
+        "path": {"type": "string"},
+        "type": {"type": "string"},
+        "extension": {"type": "string"},
+        "occurrences": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

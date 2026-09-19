@@ -146,6 +146,9 @@ Archive fingerprints hash exact ZIP bytes. Content fingerprints normalize logica
 
 - `toArray(): array`
 - `toDetailedArray(): array`
+- `getDetailedSchemaVersion(): string`
+- `getDetailedJsonSchemaPath(): string`
+- `getDetailedJsonSchema(): string`
 - `jsonSerialize(): mixed`
 - `exportJson(?string $destinationPath = null): string`
 - `exportDetailedJson(?string $destinationPath = null): string`

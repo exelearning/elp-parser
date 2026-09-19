@@ -290,6 +290,19 @@ The normalized content fingerprint ignores volatile package identity/version fie
 
 The semantic diff reports metadata, page, block, iDevice and resource additions/removals/changes.
 
+### Detailed JSON contract
+
+Detailed exports carry an explicit schema version and ship with a bundled JSON Schema:
+
+```php
+echo ELPParser::getDetailedSchemaVersion(); // 1.0
+
+$schema = ELPParser::getDetailedJsonSchema();
+$schemaPath = ELPParser::getDetailedJsonSchemaPath();
+```
+
+The detailed schema version is independent from the eXeLearning application version, ODE format version and Composer package version.
+
 ### Export JSON
 
 ```php
