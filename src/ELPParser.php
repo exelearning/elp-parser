@@ -1273,6 +1273,75 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Determine whether a package entry exists.
+     *
+     * @param string $entryName Entry name.
+     *
+     * @return bool
+     */
+    public function hasEntry(string $entryName): bool
+    {
+        return $this->archiveReader->hasEntry($entryName);
+    }
+
+    /**
+     * Read one package entry into memory.
+     *
+     * @param string   $entryName Entry name.
+     * @param int|null $maxBytes  Optional byte limit.
+     *
+     * @return string
+     */
+    public function getEntryContents(
+        string $entryName,
+        ?int $maxBytes = null
+    ): string {
+        return $this->archiveReader->readEntry($entryName, $maxBytes);
+    }
+
+    /**
+     * Copy one package entry to a writable PHP stream.
+     *
+     * @param string   $entryName Entry name.
+     * @param resource $output    Writable stream.
+     * @param int|null $maxBytes  Optional byte limit.
+     *
+     * @return int Number of bytes written.
+     */
+    public function copyEntryToStream(
+        string $entryName,
+        $output,
+        ?int $maxBytes = null
+    ): int {
+        return $this->archiveReader->copyEntryToStream(
+            $entryName,
+            $output,
+            $maxBytes
+        );
+    }
+
+    /**
+     * Extract one package entry to an explicit filesystem path.
+     *
+     * @param string   $entryName       Entry name.
+     * @param string   $destinationPath Destination file path.
+     * @param int|null $maxBytes        Optional byte limit.
+     *
+     * @return void
+     */
+    public function extractEntry(
+        string $entryName,
+        string $destinationPath,
+        ?int $maxBytes = null
+    ): void {
+        $this->archiveReader->extractEntry(
+            $entryName,
+            $destinationPath,
+            $maxBytes
+        );
+    }
+
+    /**
      * Get internal exe-node page references with their origins.
      *
      * @return array<int, array<string, mixed>>
