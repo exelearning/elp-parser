@@ -23,6 +23,7 @@ Parser for eXeLearning project files with support for legacy `contentv3.xml` pro
 - eXeLearning 3 and 4 ELPX package conventions without treating them as different XML format versions
 - Explicit and heuristic eXeLearning major-version detection with detection details
 - Normalized metadata, strings, pages, blocks, iDevices and asset references
+- Normalized iDevice state across standard JSON, DataGame, embedded JSON and HTML-only storage patterns
 - Asset discovery in HTML, CSS-like values, `srcset` and structured `jsonProperties`
 - Archive-backed asset normalization and orphan-asset detection
 - Safe ZIP extraction with path traversal and symlink checks
@@ -92,6 +93,8 @@ $pages = $parser->getPages();
 $visiblePages = $parser->getVisiblePages();
 $blocks = $parser->getBlocks();
 $idevices = $parser->getIdevices();
+
+// Modern iDevices expose storagePattern, data and stateDecodeError.
 $pageTexts = $parser->getPageTexts();
 $assets = $parser->getAssets();
 $assetsDetailed = $parser->getAssetsDetailed();

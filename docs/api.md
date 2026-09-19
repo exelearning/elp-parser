@@ -122,3 +122,15 @@ All parser-specific exceptions extend `Exelearning\Exception\ElpParserException`
 - `validateSchema(string $schemaPath, string $type = 'xsd'): array` — validate the project XML against a caller-supplied trusted local XSD or DTD.
 
 Use `Exelearning\Validation\SchemaValidator::TYPE_XSD` or `TYPE_DTD`. Schema validation is optional and requires the DOM extension.
+
+
+### Normalized iDevice state
+
+Modern iDevice records include:
+
+- `jsonPropertiesRaw` — unmodified `jsonProperties` payload.
+- `storagePattern` — `standard-json`, `data-game`, `embedded-json` or `html-only`.
+- `data` — normalized decoded state when available.
+- `stateDecodeError` — decoding error text without making project parsing fail.
+
+The existing `html` and decoded `jsonProperties` fields remain available.
