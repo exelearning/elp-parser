@@ -4,7 +4,17 @@ name: Generate and Deploy Documentation
 on:
   push:
     branches:
-      - main  # Or the branch you use for documentation
+      - main
+  pull_request:
+    paths:
+      - "src/**"
+      - "docs/**"
+      - "README.md"
+      - "mkdocs.yml"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: write
 
 jobs:
   build-docs:
@@ -13,23 +23,46 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
           python-version: 3.11
 
-      # Install dependencies
-      - name: Install dependencies
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Install MkDocs dependencies
         run: |
           pip install mkdocs==1.5.3 mkdocs-material pymdown-extensions mkdocs-minify-plugin
 
-      # Build the MkDocs site
+      - name: Download phpDocumentor
+        run: |
+          curl -fsSL \
+            -o /tmp/phpDocumentor.phar \
+            https://github.com/phpDocumentor/phpDocumentor/releases/download/v3.10.0/phpDocumentor.phar
+          echo "fe1e7c23ba3329aa6f19ac3c807446159a431a195ec5d9163b0c281a15105207  /tmp/phpDocumentor.phar" \
+            | sha256sum --check --strict
+
       - name: Build MkDocs site
         run: mkdocs build
 
-      # Deploy to GitHub Pages
+      - name: Build generated PHP API documentation
+        run: |
+          php /tmp/phpDocumentor.phar \
+            -d src \
+            -t site/api-docs \
+            --title "ELP Parser API"
+
+      - name: Verify generated documentation
+        run: |
+          test -f site/index.html
+          test -f site/api-docs/index.html
+
       - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
