@@ -429,6 +429,10 @@ php tests/upstream-compat.php /path/to/exelearning/test/fixtures
 - [Security policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)
 
+## Release integrity
+
+Tagged releases publish a CycloneDX SBOM, SHA-256 checksums and GitHub artifact attestations for build provenance and the SBOM. See [Release supply chain](docs/supply-chain.md).
+
 ## License
 
 The project is distributed under the MIT License. See [LICENSE.md](LICENSE.md).

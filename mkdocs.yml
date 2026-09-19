@@ -59,6 +59,7 @@ nav:
   - Guides:
       - Validation: validation.md
       - Security: security.md
+      - Release Supply Chain: supply-chain.md
       - iDevices: idevices.md
       - Assets and Package Entries: assets.md
       - Performance: performance.md
