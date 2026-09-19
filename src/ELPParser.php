@@ -31,6 +31,7 @@ use Exelearning\Support\VersionDetector;
 use Exelearning\Support\XmlLoader;
 use Exelearning\Validation\PackageValidator;
 use Exelearning\Validation\SchemaValidator;
+use Exelearning\Validation\ValidationResult;
 use JsonException;
 use JsonSerializable;
 
@@ -435,7 +436,8 @@ class ELPParser implements JsonSerializable
             $this->hydrateCommonData($parsed);
         } else {
             $parsed = (new OdeParser(
-                normalizeIdeviceState: $this->options->normalizeIdeviceState
+                normalizeIdeviceState: $this->options->normalizeIdeviceState,
+                decoderRegistry: $this->options->ideviceDecoders
             ))->parse($xml);
             $this->contentSchemaVersion = is_string($parsed['schemaVersion'] ?? null)
                 ? $parsed['schemaVersion']
@@ -1958,6 +1960,19 @@ class ELPParser implements JsonSerializable
     public function validatePackage(): array
     {
         return (new PackageValidator())->validate($this);
+    }
+
+    /**
+     * Validate project structure using typed diagnostics.
+     *
+     * The existing validate() and validatePackage() array APIs remain
+     * unchanged for backward compatibility.
+     *
+     * @return ValidationResult
+     */
+    public function validateResult(): ValidationResult
+    {
+        return ValidationResult::fromArray($this->validatePackage());
     }
 
     /**
