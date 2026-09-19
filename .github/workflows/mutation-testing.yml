@@ -1,0 +1,70 @@
+name: Mutation Testing
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "composer.json"
+      - "phpunit.xml"
+      - "infection.json"
+      - ".github/workflows/mutation-testing.yml"
+  push:
+    branches:
+      - quality/mutation-testing
+  schedule:
+    - cron: "41 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    name: Infection mutation tests
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: dom, libxml, mbstring, simplexml, tokenizer, xmlwriter, zip
+          coverage: pcov
+
+      - name: Install project dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Download Infection
+        run: |
+          curl -fsSL \
+            -o /tmp/infection.phar \
+            https://github.com/infection/infection/releases/download/0.35.4/infection.phar
+          echo "24e9d2ab5fc5613be6b9fea99cfd2c689234d6e6053f339b8f5e05136246070a  /tmp/infection.phar" \
+            | sha256sum --check --strict
+
+      - name: Run mutation tests
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch origin "$BASE_REF"
+            php /tmp/infection.phar \
+              --git-diff-lines \
+              --git-diff-base="origin/$BASE_REF" \
+              --ignore-msi-with-no-mutations \
+              --threads=max
+          else
+            php /tmp/infection.phar --threads=max
+          fi
