@@ -1075,6 +1075,10 @@ class ELPParser implements JsonSerializable
      */
     public function getOrphanAssets(): array
     {
+        if ($this->orphanAssetsCache !== null) {
+            return $this->orphanAssetsCache;
+        }
+
         $referenced = array_fill_keys($this->assets, true);
         $orphans = [];
 
@@ -1094,8 +1098,9 @@ class ELPParser implements JsonSerializable
         }
 
         sort($orphans);
+        $this->orphanAssetsCache = $orphans;
 
-        return $orphans;
+        return $this->orphanAssetsCache;
     }
 
     /**
@@ -1105,7 +1110,13 @@ class ELPParser implements JsonSerializable
      */
     public function getBrokenReferences(): array
     {
-        return $this->assetExtractor->findBrokenReferences($this->pages);
+        if ($this->brokenReferencesCache === null) {
+            $this->brokenReferencesCache = $this->assetExtractor->findBrokenReferences(
+                $this->pages
+            );
+        }
+
+        return $this->brokenReferencesCache;
     }
 
     /**
@@ -1165,7 +1176,13 @@ class ELPParser implements JsonSerializable
      */
     public function getInternalLinks(): array
     {
-        return $this->internalReferenceExtractor->extract($this->pages);
+        if ($this->internalLinksCache === null) {
+            $this->internalLinksCache = $this->internalReferenceExtractor->extract(
+                $this->pages
+            );
+        }
+
+        return $this->internalLinksCache;
     }
 
     /**
@@ -1175,23 +1192,20 @@ class ELPParser implements JsonSerializable
      */
     public function getBrokenInternalLinks(): array
     {
-        $pageIds = [];
-
-        foreach ($this->pages as $page) {
-            $id = (string) ($page['id'] ?? '');
-            if ($id !== '') {
-                $pageIds[$id] = true;
-            }
+        if ($this->brokenInternalLinksCache !== null) {
+            return $this->brokenInternalLinksCache;
         }
 
-        return array_values(
+        $this->brokenInternalLinksCache = array_values(
             array_filter(
                 $this->getInternalLinks(),
-                static fn(array $link): bool => !isset(
-                    $pageIds[(string) ($link['targetPageId'] ?? '')]
+                fn(array $link): bool => !isset(
+                    $this->pagesById[(string) ($link['targetPageId'] ?? '')]
                 )
             )
         );
+
+        return $this->brokenInternalLinksCache;
     }
 
     /**
@@ -1201,6 +1215,10 @@ class ELPParser implements JsonSerializable
      */
     public function getUsedIdeviceTypes(): array
     {
+        if ($this->usedIdeviceTypesCache !== null) {
+            return $this->usedIdeviceTypesCache;
+        }
+
         $types = [];
 
         foreach ($this->getIdevices() as $idevice) {
@@ -1212,8 +1230,9 @@ class ELPParser implements JsonSerializable
 
         $types = array_keys($types);
         sort($types);
+        $this->usedIdeviceTypesCache = $types;
 
-        return $types;
+        return $this->usedIdeviceTypesCache;
     }
 
     /**
@@ -1223,6 +1242,10 @@ class ELPParser implements JsonSerializable
      */
     public function getAvailableIdeviceTypes(): array
     {
+        if ($this->availableIdeviceTypesCache !== null) {
+            return $this->availableIdeviceTypesCache;
+        }
+
         $types = [];
 
         foreach ($this->archiveEntries as $entry) {
@@ -1233,8 +1256,9 @@ class ELPParser implements JsonSerializable
 
         $types = array_keys($types);
         sort($types);
+        $this->availableIdeviceTypesCache = $types;
 
-        return $types;
+        return $this->availableIdeviceTypesCache;
     }
 
     /**
@@ -1259,6 +1283,10 @@ class ELPParser implements JsonSerializable
      */
     public function getPackageManifest(): array
     {
+        if ($this->packageManifestCache !== null) {
+            return $this->packageManifestCache;
+        }
+
         $manifest = [
             'rootFiles' => [],
             'themeFiles' => [],
@@ -1308,11 +1336,13 @@ class ELPParser implements JsonSerializable
 
         ksort($manifest['ideviceFiles']);
 
-        return $manifest + [
+        $this->packageManifestCache = $manifest + [
             'usedIdeviceTypes' => $this->getUsedIdeviceTypes(),
             'availableIdeviceTypes' => $this->getAvailableIdeviceTypes(),
             'missingIdeviceRuntimes' => $this->getMissingIdeviceRuntimes(),
         ];
+
+        return $this->packageManifestCache;
     }
 
     /**
