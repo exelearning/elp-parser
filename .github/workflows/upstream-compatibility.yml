@@ -1,0 +1,43 @@
+name: Upstream Compatibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  upstream-corpus:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout parser
+        uses: actions/checkout@v7
+        with:
+          path: parser
+
+      - name: Checkout upstream eXeLearning fixtures
+        uses: actions/checkout@v7
+        with:
+          repository: exelearning/exelearning
+          path: upstream
+          sparse-checkout: |
+            test/fixtures
+          sparse-checkout-cone-mode: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: dom, libxml, simplexml, zip
+          coverage: none
+
+      - name: Install dependencies
+        working-directory: parser
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Parse upstream project corpus
+        working-directory: parser
+        run: php tests/upstream-compat.php ../upstream/test/fixtures
