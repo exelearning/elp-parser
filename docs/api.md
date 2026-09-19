@@ -12,6 +12,10 @@ Create and immediately parse an eXeLearning project.
 
 Factory equivalent to the constructor.
 
+#### `inspect(string $filePath, ?ArchiveLimits $limits = null): array`
+
+Read core format/version/project metadata without fully normalizing pages, iDevices or assets.
+
 ### Version and format
 
 - `getVersion(): int` — detected major version kept for backward compatibility.
@@ -80,6 +84,12 @@ Factory equivalent to the constructor.
 - `getArchiveEntries(): array`
 
 Asset references are returned only when they resolve to an entry in the project archive. Both the v3 long form (`{{context_path}}/content/resources/...`) and the v4 form (`{{context_path}}/<exportPath>`) are resolved.
+
+### Typed model API
+
+- `getProject(): Exelearning\\Model\\Project`
+- Model wrappers: `Project`, `Page`, `Block`, `Idevice`, `Asset`, `VersionInfo`.
+- The typed API is additive; existing array-returning APIs remain supported.
 
 ### Serialization and extraction
 
