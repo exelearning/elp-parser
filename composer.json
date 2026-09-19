@@ -20,6 +20,9 @@
         "ext-simplexml": "*",
         "ext-zip": "*"
     },
+    "suggest": {
+        "ext-dom": "Required for optional XSD/DTD schema validation"
+    },
     "require-dev": {
         "pestphp/pest": "^1.23 || ^2.36 || ^3.8 || ^4.7 || ^5.2",
         "phpstan/phpstan": "^2.2",
