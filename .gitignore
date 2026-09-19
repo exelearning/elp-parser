@@ -5,6 +5,7 @@ composer.lock
 .aider*
 .env
 .phpunit.result.cache
+coverage.xml
 env/
 
 # Ignore folders inside tests/fixtures/

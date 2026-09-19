@@ -12,6 +12,7 @@ Parser for eXeLearning project files with support for legacy `contentv3.xml` pro
 <a href="https://packagist.org/packages/exelearning/elp-parser"><img src="https://img.shields.io/packagist/v/exelearning/elp-parser.svg?style=flat-square" alt="Packagist"></a>
 <a href="https://packagist.org/packages/exelearning/elp-parser"><img src="https://img.shields.io/packagist/dm/exelearning/elp-parser.svg?style=flat-square" alt="Packagist"></a>
 <a href="https://packagist.org/packages/exelearning/elp-parser"><img src="https://img.shields.io/packagist/php-v/exelearning/elp-parser.svg?style=flat-square" alt="PHP from Packagist"></a>
+<a href="https://codecov.io/gh/exelearning/elp-parser"><img src="https://codecov.io/gh/exelearning/elp-parser/graph/badge.svg" alt="Codecov"></a>
 </p>
 
 ## Features
@@ -268,6 +269,14 @@ Use `getFormatVersion()` for the ODE format version, `getApplicationVersion()` f
 Parsed projects are indexed by page, block and iDevice ID for constant-time lookup. Aggregate collections and diagnostics are cached because parser instances are immutable after construction. Asset-reference resolution also caches normalized archive lookups.
 
 The upstream compatibility corpus records per-project timings, total elapsed time, peak memory and the five slowest projects. These measurements are informational and do not impose brittle timing thresholds in CI.
+
+## Test coverage
+
+The test suite enforces a minimum **90% project coverage** locally and in CI. The coverage job produces a Clover report and uploads it to Codecov. Codecov also requires at least 90% project and patch coverage for pull requests.
+
+```bash
+composer test:coverage
+```
 
 ## Compatibility regression testing
 
