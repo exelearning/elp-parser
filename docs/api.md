@@ -113,6 +113,16 @@ Asset references are returned only when they resolve to an entry in the project 
 - Model wrappers: `Project`, `Page`, `Block`, `Idevice`, `Asset`, `VersionInfo`.
 - The typed API is additive; existing array-returning APIs remain supported.
 
+### Fingerprints and comparison
+
+- `getArchiveFingerprint(string $algorithm = 'sha256'): string`
+- `getArchiveEntryFingerprint(string $entryName, string $algorithm = 'sha256'): string`
+- `getContentFingerprint(string $algorithm = 'sha256'): string`
+- `hasSameContentAs(ELPParser $other, string $algorithm = 'sha256'): bool`
+- `diff(ELPParser $other, string $algorithm = 'sha256'): array`
+
+Archive fingerprints hash exact ZIP bytes. Content fingerprints normalize logical project data, exclude volatile package identity/version metadata and include project resource hashes.
+
 ### Serialization and extraction
 
 - `toArray(): array`
