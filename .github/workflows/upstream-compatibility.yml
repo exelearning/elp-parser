@@ -1,6 +1,10 @@
 name: Upstream Compatibility
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/upstream-compatibility.yml"
+      - "tests/upstream-compat.php"
   workflow_dispatch:
   schedule:
     - cron: "17 4 * * 1"
