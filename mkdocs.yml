@@ -54,6 +54,7 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Command-line Interface: cli.md
   - Formats: formats.md
   - Guides:
       - Validation: validation.md
