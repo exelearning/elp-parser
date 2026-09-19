@@ -113,6 +113,9 @@ $assetsDetailed = $parser->getAssetsDetailed();
 $orphanAssets = $parser->getOrphanAssets();
 $missingAssets = $parser->getMissingAssets();
 $brokenReferences = $parser->getBrokenReferences();
+$internalLinks = $parser->getInternalLinks();
+$brokenInternalLinks = $parser->getBrokenInternalLinks();
+$manifest = $parser->getPackageManifest();
 $metadata = $parser->getMetadata();
 $userPreferences = $parser->getUserPreferences();
 $odeResources = $parser->getOdeResources();
@@ -140,7 +143,7 @@ if (!$result['valid']) {
 print_r($result['warnings']);
 ```
 
-The validator reports unresolved assets, duplicate identifiers, broken page-parent relationships, hierarchy cycles, relationship/order inconsistencies and missing v4 baseline files/directories.
+The validator reports unresolved assets, broken internal `exe-node:` links, duplicate identifiers, broken page-parent relationships, hierarchy cycles, relationship/order inconsistencies, missing iDevice runtime directories and missing v4 baseline files/directories.
 
 Schema validation is optional and only uses a caller-supplied trusted local schema:
 
