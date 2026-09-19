@@ -23,6 +23,8 @@ use Exelearning\Parser\LegacyParser;
 use Exelearning\Parser\OdeParser;
 use Exelearning\Support\VersionDetector;
 use Exelearning\Support\XmlLoader;
+use Exelearning\Validation\PackageValidator;
+use Exelearning\Validation\SchemaValidator;
 use JsonException;
 use JsonSerializable;
 
@@ -904,6 +906,34 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get unresolved asset references with their page and iDevice origins.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getBrokenReferences(): array
+    {
+        return $this->assetExtractor->findBrokenReferences($this->pages);
+    }
+
+    /**
+     * Get unique unresolved asset reference strings.
+     *
+     * @return array<int, string>
+     */
+    public function getMissingAssets(): array
+    {
+        $references = array_map(
+            static fn(array $reference): string => (string) ($reference['reference'] ?? ''),
+            $this->getBrokenReferences()
+        );
+
+        $references = array_values(array_unique(array_filter($references)));
+        sort($references);
+
+        return $references;
+    }
+
+    /**
      * Filter asset paths by logical type.
      *
      * @param string $type Asset type.
@@ -1044,6 +1074,8 @@ class ELPParser implements JsonSerializable
             'idevices' => $this->getIdevices(),
             'assets' => $this->assetsDetailed,
             'orphanAssets' => $this->getOrphanAssets(),
+            'missingAssets' => $this->getMissingAssets(),
+            'brokenReferences' => $this->getBrokenReferences(),
             'archiveEntries' => $this->archiveEntries,
         ];
     }
@@ -1265,6 +1297,46 @@ class ELPParser implements JsonSerializable
         }
 
         return $page;
+    }
+
+    /**
+     * Validate project structure and package consistency.
+     *
+     * @return array{valid:bool,errors:array<int,array<string,mixed>>,warnings:array<int,array<string,mixed>>}
+     */
+    public function validate(): array
+    {
+        return $this->validatePackage();
+    }
+
+    /**
+     * Validate project structure and package consistency.
+     *
+     * @return array{valid:bool,errors:array<int,array<string,mixed>>,warnings:array<int,array<string,mixed>>}
+     */
+    public function validatePackage(): array
+    {
+        return (new PackageValidator())->validate($this);
+    }
+
+    /**
+     * Validate project XML against a caller-supplied trusted local schema.
+     *
+     * @param string $schemaPath Trusted local XSD or DTD path.
+     * @param string $type       Schema type, xsd or dtd.
+     *
+     * @return array{valid:bool,errors:array<int,array<string,mixed>>}
+     */
+    public function validateSchema(
+        string $schemaPath,
+        string $type = SchemaValidator::TYPE_XSD
+    ): array {
+        $xml = $this->archiveReader->readEntry(
+            $this->contentFile,
+            $this->archiveLimits->maxXmlBytes
+        );
+
+        return (new SchemaValidator())->validate($xml, $schemaPath, $type);
     }
 
     /**
