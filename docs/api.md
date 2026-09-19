@@ -75,6 +75,8 @@ Factory equivalent to the constructor.
 - `getVideoFiles(): array`
 - `getDocuments(): array`
 - `getOrphanAssets(): array`
+- `getMissingAssets(): array`
+- `getBrokenReferences(): array`
 - `getArchiveEntries(): array`
 
 Asset references are returned only when they resolve to an entry in the project archive. Both the v3 long form (`{{context_path}}/content/resources/...`) and the v4 form (`{{context_path}}/<exportPath>`) are resolved.
@@ -111,3 +113,12 @@ All parser-specific exceptions extend `Exelearning\Exception\ElpParserException`
 - `UnsupportedFormatException`
 - `UnsafeArchiveException`
 - `ResourceLimitException`
+
+
+### Validation
+
+- `validate(): array` — alias of `validatePackage()`.
+- `validatePackage(): array` — structural/package diagnostics with `valid`, `errors` and `warnings`.
+- `validateSchema(string $schemaPath, string $type = 'xsd'): array` — validate the project XML against a caller-supplied trusted local XSD or DTD.
+
+Use `Exelearning\Validation\SchemaValidator::TYPE_XSD` or `TYPE_DTD`. Schema validation is optional and requires the DOM extension.

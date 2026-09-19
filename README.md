@@ -96,6 +96,8 @@ $pageTexts = $parser->getPageTexts();
 $assets = $parser->getAssets();
 $assetsDetailed = $parser->getAssetsDetailed();
 $orphanAssets = $parser->getOrphanAssets();
+$missingAssets = $parser->getMissingAssets();
+$brokenReferences = $parser->getBrokenReferences();
 $metadata = $parser->getMetadata();
 $userPreferences = $parser->getUserPreferences();
 $odeResources = $parser->getOdeResources();
@@ -106,6 +108,36 @@ $pageTree = $parser->getPageTree();
 Direct lookup helpers are also available: `getPageById()`, `getBlockById()`, `getIdeviceById()`, `getProjectId()` and `getProjectVersionId()`.
 
 Asset references are normalized against the actual ZIP entries. This prevents external URLs and nonexistent paths from being reported as package assets.
+
+### Validation
+
+Normal parsing remains tolerant. Validation can be requested explicitly:
+
+```php
+$result = $parser->validate();
+
+if (!$result['valid']) {
+    print_r($result['errors']);
+}
+
+print_r($result['warnings']);
+```
+
+The validator reports unresolved assets, duplicate identifiers, broken page-parent relationships, hierarchy cycles, relationship/order inconsistencies and missing v4 baseline files/directories.
+
+Schema validation is optional and only uses a caller-supplied trusted local schema:
+
+```php
+use Exelearning\Validation\SchemaValidator;
+
+$xsdResult = $parser->validateSchema('/trusted/path/ode-content.xsd');
+$dtdResult = $parser->validateSchema(
+    '/trusted/path/content.dtd',
+    SchemaValidator::TYPE_DTD
+);
+```
+
+Package-supplied DTDs are not trusted for this API. Schema loading uses `LIBXML_NONET`. The optional schema-validation API requires `ext-dom`.
 
 ### Archive limits
 
