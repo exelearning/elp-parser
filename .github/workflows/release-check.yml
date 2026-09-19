@@ -1,0 +1,51 @@
+name: Supply Chain Check
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-check.yml"
+      - "composer.json"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release-artifacts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: simplexml, zip
+          coverage: none
+
+      - name: Install runtime dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --no-interaction
+
+      - name: Create test package
+        run: composer archive --format=zip --file=elp-parser-test
+
+      - name: Generate test CycloneDX SBOM
+        uses: anchore/sbom-action@v0.24.2
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: elp-parser-test.cdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Generate and verify checksums
+        run: |
+          sha256sum elp-parser-test.zip elp-parser-test.cdx.json > SHA256SUMS
+          sha256sum --check SHA256SUMS
+
+      - name: Validate CycloneDX document
+        run: |
+          jq -e '.bomFormat == "CycloneDX"' elp-parser-test.cdx.json
+          jq -e '.specVersion != null' elp-parser-test.cdx.json
+          jq -e '.metadata.component != null' elp-parser-test.cdx.json
