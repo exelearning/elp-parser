@@ -65,6 +65,7 @@ nav:
       - Cookbook: cookbook.md
       - Detailed JSON Schema: json-schema.md
   - API Reference: api.md
+  - Generated PHP API: phpdoc.md
 
 markdown_extensions:
   - pymdownx.highlight:
