@@ -402,6 +402,10 @@ The test suite enforces a minimum **90% project coverage** locally and in CI. Th
 composer test:coverage
 ```
 
+## Mutation testing
+
+In addition to the 90% line-coverage gate, source changes are mutation-tested with Pest. Pull requests mutate changed covered code, while a weekly/manual workflow runs the full covered source with an 80% minimum mutation score. See [Mutation testing](docs/mutation-testing.md).
+
 ## Compatibility regression testing
 
 The regular test suite includes a deterministic corpus for malformed XML, encoded and Unicode asset paths, malformed iDevice state and cyclic page hierarchies.
