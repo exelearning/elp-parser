@@ -69,6 +69,7 @@ class AssetReferenceExtractor
                 }
 
                 $this->collectStringValues($idevice['jsonProperties'] ?? [], $sources);
+                $this->collectStringValues($idevice['data'] ?? [], $sources);
 
                 foreach ($sources as $source) {
                     foreach ($this->extractPathsFromString($source) as $path) {
