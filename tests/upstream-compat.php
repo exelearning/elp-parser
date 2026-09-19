@@ -42,6 +42,8 @@ sort($candidates);
 $parsed = 0;
 $skipped = 0;
 $failures = [];
+$timings = [];
+$totalStartedAt = hrtime(true);
 
 foreach ($candidates as $path) {
     $zip = new ZipArchive();
@@ -60,8 +62,10 @@ foreach ($candidates as $path) {
     }
 
     try {
+        $startedAt = hrtime(true);
         $inspection = ELPParser::inspect($path);
         $parser = ELPParser::fromFile($path);
+        $elapsedMs = (hrtime(true) - $startedAt) / 1000000;
 
         if (($inspection['title'] ?? '') !== $parser->getTitle()) {
             throw new RuntimeException(
@@ -70,12 +74,22 @@ foreach ($candidates as $path) {
         }
 
         $parsed++;
+        $relativePath = substr(
+            $path,
+            strlen(rtrim($root, DIRECTORY_SEPARATOR)) + 1
+        );
+        $timings[] = [
+            'path' => $relativePath,
+            'milliseconds' => $elapsedMs,
+        ];
+
         fwrite(
             STDOUT,
             sprintf(
-                "PASS %s [%s]\n",
-                substr($path, strlen(rtrim($root, DIRECTORY_SEPARATOR)) + 1),
-                $parser->getPackageProfile()
+                "PASS %s [%s] %.1f ms\n",
+                $relativePath,
+                $parser->getPackageProfile(),
+                $elapsedMs
             )
         );
     } catch (Throwable $exception) {
@@ -97,14 +111,46 @@ foreach ($candidates as $path) {
     }
 }
 
+$totalMs = (hrtime(true) - $totalStartedAt) / 1000000;
+
+usort(
+    $timings,
+    static fn(array $left, array $right): int => $right['milliseconds']
+        <=> $left['milliseconds']
+);
+
 fwrite(
     STDOUT,
     sprintf(
-        "\nUpstream corpus: %d candidates, %d parsed, %d skipped, %d failures.\n",
+        "\nUpstream corpus: %d candidates, %d parsed, %d skipped, %d failures, %.1f ms total.\n",
         count($candidates),
         $parsed,
         $skipped,
-        count($failures)
+        count($failures),
+        $totalMs
+    )
+);
+
+if ($timings !== []) {
+    fwrite(STDOUT, "Slowest parsed projects:\n");
+
+    foreach (array_slice($timings, 0, 5) as $timing) {
+        fwrite(
+            STDOUT,
+            sprintf(
+                "  %.1f ms  %s\n",
+                $timing['milliseconds'],
+                $timing['path']
+            )
+        );
+    }
+}
+
+fwrite(
+    STDOUT,
+    sprintf(
+        "Peak memory: %.1f MiB\n",
+        memory_get_peak_usage(true) / 1048576
     )
 );
 
