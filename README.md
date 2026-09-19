@@ -231,6 +231,18 @@ The parser distinguishes the internal project format from the detected eXeLearni
 
 Use `getFormatVersion()` for the ODE format version, `getApplicationVersion()` for the declared eXeLearning version, and `getVersionInfo()` when the distinction between declared and inferred versions matters.
 
+## Compatibility regression testing
+
+The regular test suite includes a deterministic corpus for malformed XML, encoded and Unicode asset paths, malformed iDevice state and cyclic page hierarchies.
+
+A separate `Upstream Compatibility` workflow runs weekly against project fixtures from `exelearning/exelearning`. It discovers ZIP-backed `.elp` / `.elpx` fixtures containing `content.xml` or `contentv3.xml`, compares lightweight inspection with full parsing, and fails on compatibility regressions.
+
+The corpus runner can also be used locally:
+
+```bash
+php tests/upstream-compat.php /path/to/exelearning/test/fixtures
+```
+
 ## License
 
 The project is distributed under the MIT License. See [LICENSE.md](LICENSE.md).
