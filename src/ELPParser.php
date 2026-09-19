@@ -24,6 +24,7 @@ use Exelearning\Parser\LegacyParser;
 use Exelearning\Parser\OdeParser;
 use Exelearning\Reference\InternalReferenceExtractor;
 use Exelearning\Support\ProjectInspector;
+use Exelearning\Support\TemporaryProjectFile;
 use Exelearning\Support\VersionDetector;
 use Exelearning\Support\XmlLoader;
 use Exelearning\Validation\PackageValidator;
@@ -99,6 +100,7 @@ class ELPParser implements JsonSerializable
     private ArchiveReader $archiveReader;
     private AssetReferenceExtractor $assetExtractor;
     private InternalReferenceExtractor $internalReferenceExtractor;
+    private ?string $ownedTemporaryFile = null;
 
     /**
      * Create a new parser instance.
@@ -129,6 +131,70 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Create a parser from a readable PHP stream resource.
+     *
+     * @param mixed              $stream    Readable stream resource.
+     * @param string             $extension Source extension used for format heuristics.
+     * @param ArchiveLimits|null $limits    Optional archive safety limits.
+     *
+     * @return self
+     */
+    public static function fromStream(
+        mixed $stream,
+        string $extension = 'elpx',
+        ?ArchiveLimits $limits = null
+    ): self {
+        $limits = $limits ?? new ArchiveLimits();
+        $path = TemporaryProjectFile::fromStream(
+            $stream,
+            $extension,
+            $limits->maxTotalBytes
+        );
+
+        try {
+            $parser = new self($path, $limits);
+            $parser->ownedTemporaryFile = $path;
+
+            return $parser;
+        } catch (\Throwable $exception) {
+            @unlink($path);
+            throw $exception;
+        }
+    }
+
+    /**
+     * Create a parser from in-memory project bytes.
+     *
+     * @param string             $contents  Project bytes.
+     * @param string             $extension Source extension used for format heuristics.
+     * @param ArchiveLimits|null $limits    Optional archive safety limits.
+     *
+     * @return self
+     */
+    public static function fromContents(
+        string $contents,
+        string $extension = 'elpx',
+        ?ArchiveLimits $limits = null
+    ): self {
+        $limits = $limits ?? new ArchiveLimits();
+        $path = TemporaryProjectFile::fromContents(
+            $contents,
+            $extension,
+            $limits->maxTotalBytes
+        );
+
+        try {
+            $parser = new self($path, $limits);
+            $parser->ownedTemporaryFile = $path;
+
+            return $parser;
+        } catch (\Throwable $exception) {
+            @unlink($path);
+            throw $exception;
+        }
+    }
+
+    /**
      * Inspect core project metadata without fully normalizing page content.
      *
      * @param string             $filePath Project file path.
@@ -139,6 +205,62 @@ class ELPParser implements JsonSerializable
     public static function inspect(string $filePath, ?ArchiveLimits $limits = null): array
     {
         return (new ProjectInspector($filePath, $limits))->inspect();
+    }
+
+    /**
+     * Inspect a project from a readable stream without full normalization.
+     *
+     * @param mixed              $stream    Readable stream resource.
+     * @param string             $extension Source extension used for format heuristics.
+     * @param ArchiveLimits|null $limits    Optional archive safety limits.
+     *
+     * @return array<string, mixed>
+     */
+    public static function inspectStream(
+        mixed $stream,
+        string $extension = 'elpx',
+        ?ArchiveLimits $limits = null
+    ): array {
+        $limits = $limits ?? new ArchiveLimits();
+        $path = TemporaryProjectFile::fromStream(
+            $stream,
+            $extension,
+            $limits->maxTotalBytes
+        );
+
+        try {
+            return self::inspect($path, $limits);
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    /**
+     * Inspect in-memory project bytes without full normalization.
+     *
+     * @param string             $contents  Project bytes.
+     * @param string             $extension Source extension used for format heuristics.
+     * @param ArchiveLimits|null $limits    Optional archive safety limits.
+     *
+     * @return array<string, mixed>
+     */
+    public static function inspectContents(
+        string $contents,
+        string $extension = 'elpx',
+        ?ArchiveLimits $limits = null
+    ): array {
+        $limits = $limits ?? new ArchiveLimits();
+        $path = TemporaryProjectFile::fromContents(
+            $contents,
+            $extension,
+            $limits->maxTotalBytes
+        );
+
+        try {
+            return self::inspect($path, $limits);
+        } finally {
+            @unlink($path);
+        }
     }
 
     /**
@@ -1537,5 +1659,16 @@ class ELPParser implements JsonSerializable
     public function extract(string $destinationPath): void
     {
         $this->archiveReader->extract($destinationPath);
+    }
+
+    /**
+     * Remove any temporary project file owned by this parser instance.
+     */
+    public function __destruct()
+    {
+        if ($this->ownedTemporaryFile !== null) {
+            @unlink($this->ownedTemporaryFile);
+            $this->ownedTemporaryFile = null;
+        }
     }
 }

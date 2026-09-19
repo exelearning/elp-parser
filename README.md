@@ -50,6 +50,19 @@ composer require exelearning/elp-parser
 
 ## Usage
 
+### Streams and uploads
+
+Projects can be parsed from PHP streams or in-memory bytes. Stream input is copied in chunks to a bounded temporary file because `ZipArchive` requires a filesystem path:
+
+```php
+$stream = fopen($_FILES['project']['tmp_name'], 'rb');
+$parser = ELPParser::fromStream($stream, 'elpx');
+
+$parserFromBytes = ELPParser::fromContents($bytes, 'elpx');
+```
+
+Temporary files owned by parser instances are removed automatically. `inspectStream()` and `inspectContents()` provide the corresponding lightweight inspection APIs.
+
 ### Lightweight inspection
 
 For cataloging or indexing, `inspect()` reads archive metadata and the project XML without normalizing pages, iDevices or assets:

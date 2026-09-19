@@ -12,9 +12,25 @@ Create and immediately parse an eXeLearning project.
 
 Factory equivalent to the constructor.
 
+#### `fromStream(mixed $stream, string $extension = 'elpx', ?ArchiveLimits $limits = null): ELPParser`
+
+Parse a readable PHP stream using bounded temporary-file spooling.
+
+#### `fromContents(string $contents, string $extension = 'elpx', ?ArchiveLimits $limits = null): ELPParser`
+
+Parse in-memory project bytes.
+
 #### `inspect(string $filePath, ?ArchiveLimits $limits = null): array`
 
 Read core format/version/project metadata without fully normalizing pages, iDevices or assets.
+
+#### `inspectStream(mixed $stream, string $extension = 'elpx', ?ArchiveLimits $limits = null): array`
+
+Lightweight inspection for stream input.
+
+#### `inspectContents(string $contents, string $extension = 'elpx', ?ArchiveLimits $limits = null): array`
+
+Lightweight inspection for in-memory project bytes.
 
 ### Version and format
 
