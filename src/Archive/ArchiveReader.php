@@ -396,6 +396,7 @@ class ArchiveReader
 
         return $path === $root || str_starts_with($path, $root . DIRECTORY_SEPARATOR);
     }
+
     /**
      * Write the complete buffer to a stream.
      *
@@ -419,5 +420,4 @@ class ArchiveReader
             $written += $result;
         }
     }
-
 }
