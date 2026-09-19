@@ -20,6 +20,7 @@ Parser for eXeLearning project files with support for legacy `contentv3.xml` pro
 
 - Legacy `.elp` projects from eXeLearning 2.x based on `contentv3.xml`
 - Modern `.elp` / `.elpx` projects based on `content.xml` and ODE 2.0
+- eXeLearning 3 and 4 ELPX package conventions without treating them as different XML format versions
 - Explicit and heuristic eXeLearning major-version detection with detection details
 - Normalized metadata, strings, pages, blocks, iDevices and asset references
 - Asset discovery in HTML, CSS-like values, `srcset` and structured `jsonProperties`
@@ -70,8 +71,13 @@ echo $parser->getSourceExtension();      // elp | elpx
 echo $parser->getContentFormat();        // legacy-contentv3 | ode-content
 echo $parser->getContentFile();          // contentv3.xml | content.xml
 echo $parser->getContentSchemaVersion(); // 2.0 for modern ODE packages
+echo $parser->getFormatFamily();         // legacy | ode
+echo $parser->getFormatVersion();        // null | 2.0
 echo $parser->getExeVersion();           // raw upstream version string when present
+echo $parser->getApplicationVersion();   // alias with explicit application semantics
+echo $parser->getPackageProfile();       // legacy-v2 | elpx-v3 | elpx-v4 | ode-v3 ...
 echo $parser->getResourceLayout();       // none | content-resources | legacy-temp-paths | mixed
+echo $parser->getResourceProfile();      // v3-uuid-resources | v4-resource-tree | mixed-modern-resources | ...
 
 $versionInfo = $parser->getVersionInfo();
 // declared, declaredMajor, detectedMajor, source, signals
@@ -154,14 +160,16 @@ try {
 
 ## Version compatibility
 
-The parser distinguishes the internal project format from the detected eXeLearning version:
+The parser distinguishes the internal project format from the detected eXeLearning application/package version:
 
 - legacy `contentv3.xml` projects report major version `2`
-- modern ODE packages use declared metadata when it is reliable
+- eXeLearning 3 and 4 use the same modern ODE `content.xml` format with root `version="2.0"`
+- modern packages accept both the historical `eXeVersion` resource key and the current `exe_version` key
 - `.elpx` + `content.xml` + a root `content.dtd` remains the current signal for likely v4-style packages when embedded metadata still reports `3.0`
+- v3 UUID asset directories and the v4 resource-tree layout are reported separately through `getResourceProfile()`
 - multi-digit future major versions such as `10.x` can be parsed from version metadata
 
-Use `getVersionInfo()` when the distinction between declared and inferred versions matters.
+Use `getFormatVersion()` for the ODE format version, `getApplicationVersion()` for the declared eXeLearning version, and `getVersionInfo()` when the distinction between declared and inferred versions matters.
 
 ## License
 
