@@ -22,6 +22,7 @@ The supported PHP matrix is 8.0 through 8.5. CI must remain green on all support
 - Public API changes are checked automatically against `origin/main` with Roave Backward Compatibility Check.
 - Update README/API/cookbook documentation when public behavior changes.
 - Keep coverage at or above the configured 90% project and patch thresholds.
+- Source/test changes are mutation-tested with Infection; new behavior should kill relevant mutants rather than only execute lines.
 - Use English for source code, comments, commit messages and pull-request descriptions.
 
 ## Compatibility
