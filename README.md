@@ -32,7 +32,7 @@ Parser for eXeLearning project files with support for legacy `contentv3.xml` pro
 - Streaming extraction to avoid loading large assets into memory
 - JSON serialization
 
-For more information, visit the [documentation](https://exelearning.github.io/elp-parser/). The repository also includes an `examples/` directory with executable recipes for inspection, validation, assets, diffs, fingerprints and extraction.
+For more information, visit the [documentation](https://exelearning.github.io/elp-parser/). The published site includes both the curated API guide and a PHPDoc-generated class/reference index. The repository also includes an `examples/` directory with executable recipes for inspection, validation, assets, diffs, fingerprints and extraction.
 
 ## Requirements
 
