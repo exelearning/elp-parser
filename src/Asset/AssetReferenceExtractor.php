@@ -32,6 +32,9 @@ class AssetReferenceExtractor
     /** @var array<string, string> */
     private array $archiveLookup = [];
 
+    /** @var array<string, string|null> */
+    private array $resolutionCache = [];
+
     /**
      * @param array<int, string> $archiveEntries Archive entry names.
      */
@@ -69,7 +72,10 @@ class AssetReferenceExtractor
                 }
 
                 $this->collectStringValues($idevice['jsonProperties'] ?? [], $sources);
-                $this->collectStringValues($idevice['data'] ?? [], $sources);
+
+                if (($idevice['storagePattern'] ?? '') !== 'standard-json') {
+                    $this->collectStringValues($idevice['data'] ?? [], $sources);
+                }
 
                 foreach ($sources as $source) {
                     foreach ($this->extractPathsFromString($source) as $path) {
@@ -136,6 +142,10 @@ class AssetReferenceExtractor
                 }
 
                 $this->collectStringValues($idevice['jsonProperties'] ?? [], $sources);
+
+                if (($idevice['storagePattern'] ?? '') !== 'standard-json') {
+                    $this->collectStringValues($idevice['data'] ?? [], $sources);
+                }
 
                 foreach ($sources as $source) {
                     foreach ($this->extractCandidatesFromString($source) as $candidate) {
@@ -271,6 +281,25 @@ class AssetReferenceExtractor
      * @return string|null
      */
     private function resolveArchivePath(string $candidate): ?string
+    {
+        if (array_key_exists($candidate, $this->resolutionCache)) {
+            return $this->resolutionCache[$candidate];
+        }
+
+        $resolved = $this->resolveArchivePathUncached($candidate);
+        $this->resolutionCache[$candidate] = $resolved;
+
+        return $resolved;
+    }
+
+    /**
+     * Resolve an uncached asset reference against archive entries.
+     *
+     * @param string $candidate Raw asset reference.
+     *
+     * @return string|null
+     */
+    private function resolveArchivePathUncached(string $candidate): ?string
     {
         $candidate = trim($candidate, " \t\n\r\0\x0B\"'");
         $candidate = str_replace('{{context_path}}/', '', $candidate);

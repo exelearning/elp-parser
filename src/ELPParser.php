@@ -102,6 +102,45 @@ class ELPParser implements JsonSerializable
     private InternalReferenceExtractor $internalReferenceExtractor;
     private ?string $ownedTemporaryFile = null;
 
+    /** @var array<string, array<string, mixed>> */
+    private array $pagesById = [];
+
+    /** @var array<string, array<string, mixed>> */
+    private array $blocksById = [];
+
+    /** @var array<string, array<string, mixed>> */
+    private array $idevicesById = [];
+
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $blocksCache = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $idevicesCache = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $pageTreeCache = null;
+
+    /** @var array<int, string>|null */
+    private ?array $orphanAssetsCache = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $brokenReferencesCache = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $internalLinksCache = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    private ?array $brokenInternalLinksCache = null;
+
+    /** @var array<int, string>|null */
+    private ?array $usedIdeviceTypesCache = null;
+
+    /** @var array<int, string>|null */
+    private ?array $availableIdeviceTypesCache = null;
+
+    /** @var array<string, mixed>|null */
+    private ?array $packageManifestCache = null;
+
     /**
      * Create a new parser instance.
      *
@@ -329,6 +368,61 @@ class ELPParser implements JsonSerializable
             $this->assetsDetailed
         );
         sort($this->assets);
+        $this->buildIndexes();
+    }
+
+    /**
+     * Build immutable lookup indexes and aggregate caches.
+     *
+     * @return void
+     */
+    private function buildIndexes(): void
+    {
+        $blocks = [];
+        $idevices = [];
+
+        foreach ($this->pages as $page) {
+            $pageId = (string) ($page['id'] ?? '');
+            if ($pageId !== '') {
+                $this->pagesById[$pageId] = $page;
+            }
+
+            foreach (($page['blocks'] ?? []) as $block) {
+                if (!is_array($block)) {
+                    continue;
+                }
+
+                $normalizedBlock = $block + [
+                    'pageTitle' => $page['title'] ?? '',
+                ];
+                $blocks[] = $normalizedBlock;
+
+                $blockId = (string) ($block['id'] ?? '');
+                if ($blockId !== '') {
+                    $this->blocksById[$blockId] = $normalizedBlock;
+                }
+            }
+
+            foreach (($page['idevices'] ?? []) as $idevice) {
+                if (!is_array($idevice)) {
+                    continue;
+                }
+
+                $normalizedIdevice = $idevice + [
+                    'pageId' => $page['id'] ?? '',
+                    'pageTitle' => $page['title'] ?? '',
+                ];
+                $idevices[] = $normalizedIdevice;
+
+                $ideviceId = (string) ($idevice['id'] ?? '');
+                if ($ideviceId !== '') {
+                    $this->idevicesById[$ideviceId] = $normalizedIdevice;
+                }
+            }
+        }
+
+        $this->blocksCache = $blocks;
+        $this->idevicesCache = $idevices;
     }
 
     /**
@@ -712,13 +806,7 @@ class ELPParser implements JsonSerializable
      */
     public function getPageById(string $pageId): ?array
     {
-        foreach ($this->pages as $page) {
-            if (($page['id'] ?? '') === $pageId) {
-                return $page;
-            }
-        }
-
-        return null;
+        return $this->pagesById[$pageId] ?? null;
     }
 
     /**
@@ -728,34 +816,38 @@ class ELPParser implements JsonSerializable
      */
     public function getPageTree(): array
     {
-        $pagesById = [];
+        if ($this->pageTreeCache !== null) {
+            return $this->pageTreeCache;
+        }
+
         $childrenByParent = [];
 
-        foreach ($this->pages as $page) {
-            $id = (string) ($page['id'] ?? '');
-            if ($id === '') {
-                continue;
-            }
-
-            $pagesById[$id] = $page;
+        foreach ($this->pagesById as $id => $page) {
             $parentId = (string) ($page['parentId'] ?? '');
             $childrenByParent[$parentId][] = $id;
         }
 
         $rootIds = [];
-        foreach ($pagesById as $id => $page) {
+        foreach ($this->pagesById as $id => $page) {
             $parentId = (string) ($page['parentId'] ?? '');
-            if ($parentId === '' || !isset($pagesById[$parentId])) {
+            if ($parentId === '' || !isset($this->pagesById[$parentId])) {
                 $rootIds[] = $id;
             }
         }
 
         $tree = [];
         foreach ($rootIds as $rootId) {
-            $tree[] = $this->buildPageTreeNode($rootId, $pagesById, $childrenByParent, []);
+            $tree[] = $this->buildPageTreeNode(
+                $rootId,
+                $this->pagesById,
+                $childrenByParent,
+                []
+            );
         }
 
-        return $tree;
+        $this->pageTreeCache = $tree;
+
+        return $this->pageTreeCache;
     }
 
     /**
@@ -780,19 +872,7 @@ class ELPParser implements JsonSerializable
      */
     public function getBlocks(): array
     {
-        $blocks = [];
-
-        foreach ($this->pages as $page) {
-            foreach (($page['blocks'] ?? []) as $block) {
-                if (!is_array($block)) {
-                    continue;
-                }
-
-                $blocks[] = $block + ['pageTitle' => $page['title'] ?? ''];
-            }
-        }
-
-        return $blocks;
+        return $this->blocksCache ?? [];
     }
 
     /**
@@ -804,13 +884,7 @@ class ELPParser implements JsonSerializable
      */
     public function getBlockById(string $blockId): ?array
     {
-        foreach ($this->getBlocks() as $block) {
-            if (($block['id'] ?? '') === $blockId) {
-                return $block;
-            }
-        }
-
-        return null;
+        return $this->blocksById[$blockId] ?? null;
     }
 
     /**
@@ -820,22 +894,7 @@ class ELPParser implements JsonSerializable
      */
     public function getIdevices(): array
     {
-        $idevices = [];
-
-        foreach ($this->pages as $page) {
-            foreach (($page['idevices'] ?? []) as $idevice) {
-                if (!is_array($idevice)) {
-                    continue;
-                }
-
-                $idevices[] = $idevice + [
-                    'pageId' => $page['id'] ?? '',
-                    'pageTitle' => $page['title'] ?? '',
-                ];
-            }
-        }
-
-        return $idevices;
+        return $this->idevicesCache ?? [];
     }
 
     /**
@@ -847,13 +906,7 @@ class ELPParser implements JsonSerializable
      */
     public function getIdeviceById(string $ideviceId): ?array
     {
-        foreach ($this->getIdevices() as $idevice) {
-            if (($idevice['id'] ?? '') === $ideviceId) {
-                return $idevice;
-            }
-        }
-
-        return null;
+        return $this->idevicesById[$ideviceId] ?? null;
     }
 
     /**
@@ -1022,6 +1075,10 @@ class ELPParser implements JsonSerializable
      */
     public function getOrphanAssets(): array
     {
+        if ($this->orphanAssetsCache !== null) {
+            return $this->orphanAssetsCache;
+        }
+
         $referenced = array_fill_keys($this->assets, true);
         $orphans = [];
 
@@ -1041,8 +1098,9 @@ class ELPParser implements JsonSerializable
         }
 
         sort($orphans);
+        $this->orphanAssetsCache = $orphans;
 
-        return $orphans;
+        return $this->orphanAssetsCache;
     }
 
     /**
@@ -1052,7 +1110,13 @@ class ELPParser implements JsonSerializable
      */
     public function getBrokenReferences(): array
     {
-        return $this->assetExtractor->findBrokenReferences($this->pages);
+        if ($this->brokenReferencesCache === null) {
+            $this->brokenReferencesCache = $this->assetExtractor->findBrokenReferences(
+                $this->pages
+            );
+        }
+
+        return $this->brokenReferencesCache;
     }
 
     /**
@@ -1112,7 +1176,13 @@ class ELPParser implements JsonSerializable
      */
     public function getInternalLinks(): array
     {
-        return $this->internalReferenceExtractor->extract($this->pages);
+        if ($this->internalLinksCache === null) {
+            $this->internalLinksCache = $this->internalReferenceExtractor->extract(
+                $this->pages
+            );
+        }
+
+        return $this->internalLinksCache;
     }
 
     /**
@@ -1122,23 +1192,20 @@ class ELPParser implements JsonSerializable
      */
     public function getBrokenInternalLinks(): array
     {
-        $pageIds = [];
-
-        foreach ($this->pages as $page) {
-            $id = (string) ($page['id'] ?? '');
-            if ($id !== '') {
-                $pageIds[$id] = true;
-            }
+        if ($this->brokenInternalLinksCache !== null) {
+            return $this->brokenInternalLinksCache;
         }
 
-        return array_values(
+        $this->brokenInternalLinksCache = array_values(
             array_filter(
                 $this->getInternalLinks(),
-                static fn(array $link): bool => !isset(
-                    $pageIds[(string) ($link['targetPageId'] ?? '')]
+                fn(array $link): bool => !isset(
+                    $this->pagesById[(string) ($link['targetPageId'] ?? '')]
                 )
             )
         );
+
+        return $this->brokenInternalLinksCache;
     }
 
     /**
@@ -1148,6 +1215,10 @@ class ELPParser implements JsonSerializable
      */
     public function getUsedIdeviceTypes(): array
     {
+        if ($this->usedIdeviceTypesCache !== null) {
+            return $this->usedIdeviceTypesCache;
+        }
+
         $types = [];
 
         foreach ($this->getIdevices() as $idevice) {
@@ -1159,8 +1230,9 @@ class ELPParser implements JsonSerializable
 
         $types = array_keys($types);
         sort($types);
+        $this->usedIdeviceTypesCache = $types;
 
-        return $types;
+        return $this->usedIdeviceTypesCache;
     }
 
     /**
@@ -1170,6 +1242,10 @@ class ELPParser implements JsonSerializable
      */
     public function getAvailableIdeviceTypes(): array
     {
+        if ($this->availableIdeviceTypesCache !== null) {
+            return $this->availableIdeviceTypesCache;
+        }
+
         $types = [];
 
         foreach ($this->archiveEntries as $entry) {
@@ -1180,8 +1256,9 @@ class ELPParser implements JsonSerializable
 
         $types = array_keys($types);
         sort($types);
+        $this->availableIdeviceTypesCache = $types;
 
-        return $types;
+        return $this->availableIdeviceTypesCache;
     }
 
     /**
@@ -1206,6 +1283,10 @@ class ELPParser implements JsonSerializable
      */
     public function getPackageManifest(): array
     {
+        if ($this->packageManifestCache !== null) {
+            return $this->packageManifestCache;
+        }
+
         $manifest = [
             'rootFiles' => [],
             'themeFiles' => [],
@@ -1255,11 +1336,13 @@ class ELPParser implements JsonSerializable
 
         ksort($manifest['ideviceFiles']);
 
-        return $manifest + [
+        $this->packageManifestCache = $manifest + [
             'usedIdeviceTypes' => $this->getUsedIdeviceTypes(),
             'availableIdeviceTypes' => $this->getAvailableIdeviceTypes(),
             'missingIdeviceRuntimes' => $this->getMissingIdeviceRuntimes(),
         ];
+
+        return $this->packageManifestCache;
     }
 
     /**

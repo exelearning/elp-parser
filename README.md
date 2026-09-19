@@ -247,6 +247,12 @@ The parser distinguishes the internal project format from the detected eXeLearni
 
 Use `getFormatVersion()` for the ODE format version, `getApplicationVersion()` for the declared eXeLearning version, and `getVersionInfo()` when the distinction between declared and inferred versions matters.
 
+## Performance characteristics
+
+Parsed projects are indexed by page, block and iDevice ID for constant-time lookup. Aggregate collections and diagnostics are cached because parser instances are immutable after construction. Asset-reference resolution also caches normalized archive lookups.
+
+The upstream compatibility corpus records per-project timings, total elapsed time, peak memory and the five slowest projects. These measurements are informational and do not impose brittle timing thresholds in CI.
+
 ## Compatibility regression testing
 
 The regular test suite includes a deterministic corpus for malformed XML, encoded and Unicode asset paths, malformed iDevice state and cyclic page hierarchies.
