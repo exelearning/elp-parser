@@ -112,6 +112,59 @@ class AssetReferenceExtractor
     }
 
     /**
+     * Find asset references that cannot be resolved to archive entries.
+     *
+     * @param array<int, array<string, mixed>> $pages Parsed pages.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function findBrokenReferences(array $pages): array
+    {
+        $broken = [];
+
+        foreach ($pages as $page) {
+            foreach (($page['idevices'] ?? []) as $idevice) {
+                if (!is_array($idevice)) {
+                    continue;
+                }
+
+                $sources = [];
+                $html = (string) ($idevice['html'] ?? '');
+                if ($html !== '') {
+                    $sources[] = $html;
+                }
+
+                $this->collectStringValues($idevice['jsonProperties'] ?? [], $sources);
+
+                foreach ($sources as $source) {
+                    foreach ($this->extractCandidatesFromString($source) as $candidate) {
+                        if ($this->resolveArchivePath($candidate) !== null) {
+                            continue;
+                        }
+
+                        $key = (string) ($page['id'] ?? '')
+                            . '|'
+                            . (string) ($idevice['id'] ?? '')
+                            . '|'
+                            . $candidate;
+
+                        $broken[$key] = [
+                            'reference' => $candidate,
+                            'type' => $this->detectAssetType($candidate),
+                            'pageId' => $page['id'] ?? '',
+                            'pageTitle' => $page['title'] ?? '',
+                            'ideviceId' => $idevice['id'] ?? '',
+                            'ideviceType' => $idevice['type'] ?? '',
+                        ];
+                    }
+                }
+            }
+        }
+
+        return array_values($broken);
+    }
+
+    /**
      * Return the logical asset type for a path.
      *
      * @param string $path Asset path.
@@ -141,21 +194,48 @@ class AssetReferenceExtractor
      */
     private function extractPathsFromString(string $source): array
     {
-        if ($source === '') {
-            return [];
-        }
-
-        preg_match_all(self::ASSET_PATTERN, html_entity_decode($source, ENT_QUOTES | ENT_HTML5, 'UTF-8'), $matches);
-
         $paths = [];
-        foreach (($matches[1] ?? []) as $candidate) {
-            $path = $this->resolveArchivePath((string) $candidate);
+
+        foreach ($this->extractCandidatesFromString($source) as $candidate) {
+            $path = $this->resolveArchivePath($candidate);
             if ($path !== null) {
                 $paths[] = $path;
             }
         }
 
         return array_values(array_unique($paths));
+    }
+
+    /**
+     * Extract package-like asset reference candidates from arbitrary text.
+     *
+     * @param string $source HTML, CSS, JSON value, or other text.
+     *
+     * @return array<int, string>
+     */
+    private function extractCandidatesFromString(string $source): array
+    {
+        if ($source === '') {
+            return [];
+        }
+
+        preg_match_all(
+            self::ASSET_PATTERN,
+            html_entity_decode($source, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            $matches
+        );
+
+        $candidates = [];
+        foreach (($matches[1] ?? []) as $candidate) {
+            $candidate = trim((string) $candidate, " \t\n\r\0\x0B\"'");
+            if ($candidate === '' || preg_match('#^[a-z][a-z0-9+.-]*:#i', $candidate) === 1) {
+                continue;
+            }
+
+            $candidates[] = $candidate;
+        }
+
+        return array_values(array_unique($candidates));
     }
 
     /**
