@@ -1,0 +1,45 @@
+name: Backward Compatibility
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "composer.json"
+      - ".github/workflows/backward-compatibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backwards-compatibility:
+    runs-on: ubuntu-latest
+    name: Public API BC check
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: dom, libxml, simplexml, zip
+          coverage: none
+
+      - name: Install Roave BC Check
+        run: |
+          composer global require \
+            roave/backward-compatibility-check:8.22.0 \
+            --no-interaction \
+            --no-progress
+
+      - name: Check public API compatibility with main
+        run: |
+          BC_BIN="$(composer global config bin-dir --absolute)/roave-backward-compatibility-check"
+          "$BC_BIN" \
+            --from=origin/main \
+            --to=HEAD \
+            --format=github-actions
