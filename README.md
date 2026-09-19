@@ -97,7 +97,13 @@ $assets = $parser->getAssets();
 $assetsDetailed = $parser->getAssetsDetailed();
 $orphanAssets = $parser->getOrphanAssets();
 $metadata = $parser->getMetadata();
+$userPreferences = $parser->getUserPreferences();
+$odeResources = $parser->getOdeResources();
+$odeProperties = $parser->getOdeProperties();
+$pageTree = $parser->getPageTree();
 ```
+
+Direct lookup helpers are also available: `getPageById()`, `getBlockById()`, `getIdeviceById()`, `getProjectId()` and `getProjectVersionId()`.
 
 Asset references are normalized against the actual ZIP entries. This prevents external URLs and nonexistent paths from being reported as package assets.
 
@@ -127,7 +133,12 @@ The defaults are 20,000 entries, 1 GiB per entry, approximately 2 GiB total unco
 ```php
 $json = $parser->exportJson();
 $parser->exportJson('/path/to/output.json');
+
+$detailedJson = $parser->exportDetailedJson();
+$detailed = $parser->toDetailedArray();
 ```
+
+The existing JSON export remains compact. The detailed representation adds format/version information, metadata, ODE preferences/resources/properties, pages and page tree, blocks, iDevices, assets and archive entries.
 
 ### Extract project files
 
