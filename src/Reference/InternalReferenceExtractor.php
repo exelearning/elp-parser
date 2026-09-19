@@ -45,7 +45,10 @@ final class InternalReferenceExtractor
                 }
 
                 $this->collectStringValues($idevice['jsonProperties'] ?? [], $sources);
-                $this->collectStringValues($idevice['data'] ?? [], $sources);
+
+                if (($idevice['storagePattern'] ?? '') !== 'standard-json') {
+                    $this->collectStringValues($idevice['data'] ?? [], $sources);
+                }
 
                 foreach ($sources as $source) {
                     foreach ($this->extractTargets($source) as $targetPageId) {
