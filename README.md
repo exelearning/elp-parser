@@ -191,6 +191,38 @@ A parallel typed API is available through `$parser->getProject()`. It returns `P
 
 Asset references are normalized against the actual ZIP entries. This prevents external URLs and nonexistent paths from being reported as package assets.
 
+### Typed validation and iDevice extensions
+
+The existing validation arrays remain supported. A typed wrapper is available when object APIs are preferable:
+
+```php
+$result = $parser->validateResult();
+
+if (!$result->isValid()) {
+    foreach ($result->errors() as $diagnostic) {
+        echo $diagnostic->getCode() . ': '
+            . $diagnostic->getMessage() . PHP_EOL;
+    }
+}
+```
+
+Domain-specific iDevice decoding can be plugged in without modifying the parser:
+
+```php
+use Exelearning\Parser\IdeviceDecoderInterface;
+use Exelearning\Parser\IdeviceDecoderRegistry;
+use Exelearning\ParserOptions;
+
+$registry = new IdeviceDecoderRegistry([
+    new MyIdeviceDecoder(),
+]);
+
+$options = new ParserOptions(ideviceDecoders: $registry);
+$parser = ELPParser::fromFile($path, $options);
+```
+
+Custom decoder output is exposed as `customDecoder` and `customData` on matching normalized iDevices.
+
 ### Validation
 
 Normal parsing remains tolerant. Validation can be requested explicitly:
