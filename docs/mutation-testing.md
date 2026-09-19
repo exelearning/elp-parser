@@ -14,7 +14,7 @@ Configured quality gate:
 PRs that modify source, tests or test configuration run:
 
 ```bash
-vendor/bin/pest --mutate --parallel --covered-only --min=80
+vendor/bin/pest --mutate --parallel --everything --covered-only --min=80
 ```
 
 This keeps mutation quality as a required code-review signal while the regular PHP 8.0–8.5 matrix continues to validate runtime compatibility.
