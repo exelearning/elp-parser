@@ -5,6 +5,7 @@ ELP Parser is a PHP library for reading eXeLearning project packages in legacy `
 ## Highlights
 
 - `.elp` and `.elpx` support
+- explicit eXeLearning 3/4 ELPX compatibility on the shared ODE 2.0 format
 - normalized metadata, page, block and iDevice inspection
 - explicit version-detection details through `getVersionInfo()`
 - archive-backed asset extraction from HTML and structured iDevice properties
@@ -25,6 +26,8 @@ $parser = ELPParser::fromFile('path/to/project.elpx');
 
 echo $parser->getTitle() . PHP_EOL;
 echo $parser->getVersion() . PHP_EOL;
+echo $parser->getFormatVersion() . PHP_EOL;
+echo $parser->getPackageProfile() . PHP_EOL;
 print_r($parser->getVersionInfo());
 
 foreach ($parser->getPages() as $page) {
@@ -65,3 +68,10 @@ $parser->extract('path/to/destination');
 ```
 
 Extraction streams each file and rejects unsafe archive paths, ZIP symlinks, and filesystem paths that resolve outside the destination root.
+
+
+## eXeLearning 3 and 4
+
+eXeLearning 3 and 4 share the modern ODE `content.xml` format. The root format version remains `2.0`; application/package compatibility is reported separately.
+
+The parser accepts both `eXeVersion` and `exe_version`, resolves both generations of asset references, and distinguishes v3 UUID resource directories from the v4 resource-tree layout.
