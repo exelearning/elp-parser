@@ -38,6 +38,9 @@
             "Exelearning\\ElpParser\\Tests\\": "tests/"
         }
     },
+    "bin": [
+        "bin/elp-parser"
+    ],
     "scripts": {
         "test": "vendor/bin/pest",
         "test:coverage": "vendor/bin/pest --coverage --coverage-clover coverage.xml --min=90",

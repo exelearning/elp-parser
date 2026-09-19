@@ -49,6 +49,23 @@ Composer declares these extensions and will report a missing requirement during 
 composer require exelearning/elp-parser
 ```
 
+## Command-line interface
+
+Composer exposes `vendor/bin/elp-parser` for common inspection and automation workflows:
+
+```bash
+vendor/bin/elp-parser inspect course.elpx
+vendor/bin/elp-parser validate course.elpx
+vendor/bin/elp-parser manifest course.elpx
+vendor/bin/elp-parser assets course.elpx
+vendor/bin/elp-parser json course.elpx --detailed
+vendor/bin/elp-parser diff old.elpx new.elpx
+vendor/bin/elp-parser fingerprint course.elpx
+vendor/bin/elp-parser extract course.elpx output/
+```
+
+Use `--json` with `inspect`, `validate` and `fingerprint` for machine-readable output. See the CLI documentation for exit-code semantics.
+
 ## Usage
 
 ### Streams and uploads
