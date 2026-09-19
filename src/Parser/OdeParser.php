@@ -29,13 +29,18 @@ use SimpleXMLElement;
 class OdeParser
 {
     private HtmlText $htmlText;
+    private IdeviceStateParser $stateParser;
 
     /**
-     * @param HtmlText|null $htmlText Optional HTML text converter.
+     * @param HtmlText|null            $htmlText    Optional HTML text converter.
+     * @param IdeviceStateParser|null  $stateParser Optional iDevice state parser.
      */
-    public function __construct(?HtmlText $htmlText = null)
-    {
+    public function __construct(
+        ?HtmlText $htmlText = null,
+        ?IdeviceStateParser $stateParser = null
+    ) {
         $this->htmlText = $htmlText ?? new HtmlText();
+        $this->stateParser = $stateParser ?? new IdeviceStateParser();
     }
 
     /**
@@ -148,6 +153,10 @@ class OdeParser
                         $this->xpath($component, './x:odeComponentsProperties/x:odeComponentsProperty')
                     );
                     $html = isset($component->htmlView) ? trim((string) $component->htmlView) : '';
+                    $jsonPropertiesRaw = isset($component->jsonProperties)
+                        ? trim((string) $component->jsonProperties)
+                        : '';
+                    $state = $this->stateParser->parse($html, $jsonPropertiesRaw);
 
                     $componentData = [
                         'id' => isset($component->odeIdeviceId) ? (string) $component->odeIdeviceId : '',
@@ -155,9 +164,11 @@ class OdeParser
                         'order' => isset($component->odeComponentsOrder) ? (int) $component->odeComponentsOrder : 0,
                         'text' => $this->htmlText->convert($html),
                         'html' => $html,
-                        'jsonProperties' => $this->decodeJsonProperties(
-                            isset($component->jsonProperties) ? (string) $component->jsonProperties : ''
-                        ),
+                        'jsonPropertiesRaw' => $jsonPropertiesRaw,
+                        'jsonProperties' => $this->decodeJsonProperties($jsonPropertiesRaw),
+                        'storagePattern' => $state['storagePattern'],
+                        'data' => $state['data'],
+                        'stateDecodeError' => $state['decodeError'],
                         'visible' => ($componentProperties['visibility'] ?? 'true') !== 'false',
                         'teacherOnly' => ($componentProperties['teacherOnly'] ?? 'false') === 'true',
                         'identifier' => $componentProperties['identifier'] ?? '',
