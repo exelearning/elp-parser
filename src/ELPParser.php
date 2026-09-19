@@ -65,6 +65,9 @@ class ELPParser implements JsonSerializable
     /** @var array<string, string> */
     protected array $odeResources = [];
 
+    /** @var array<string, string> */
+    protected array $userPreferences = [];
+
     /** @var array<int, string> */
     protected array $strings = [];
 
@@ -161,6 +164,9 @@ class ELPParser implements JsonSerializable
             $this->contentSchemaVersion = is_string($parsed['schemaVersion'] ?? null)
                 ? $parsed['schemaVersion']
                 : null;
+            $this->userPreferences = is_array($parsed['userPreferences'] ?? null)
+                ? $parsed['userPreferences']
+                : [];
             $this->odeProperties = is_array($parsed['properties'] ?? null) ? $parsed['properties'] : [];
             $this->odeResources = is_array($parsed['resources'] ?? null) ? $parsed['resources'] : [];
             $this->exeVersion = is_string($parsed['exeVersion'] ?? null) ? $parsed['exeVersion'] : null;
@@ -412,6 +418,60 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get modern ODE user preferences.
+     *
+     * @return array<string, string>
+     */
+    public function getUserPreferences(): array
+    {
+        return $this->userPreferences;
+    }
+
+    /**
+     * Get modern ODE resources.
+     *
+     * @return array<string, string>
+     */
+    public function getOdeResources(): array
+    {
+        return $this->odeResources;
+    }
+
+    /**
+     * Get modern ODE properties.
+     *
+     * @return array<string, string>
+     */
+    public function getOdeProperties(): array
+    {
+        return $this->odeProperties;
+    }
+
+    /**
+     * Get the stable ODE project identifier.
+     *
+     * @return string|null
+     */
+    public function getProjectId(): ?string
+    {
+        $projectId = $this->odeResources['odeId'] ?? null;
+
+        return is_string($projectId) && $projectId !== '' ? $projectId : null;
+    }
+
+    /**
+     * Get the ODE project-version identifier.
+     *
+     * @return string|null
+     */
+    public function getProjectVersionId(): ?string
+    {
+        $versionId = $this->odeResources['odeVersionId'] ?? null;
+
+        return is_string($versionId) && $versionId !== '' ? $versionId : null;
+    }
+
+    /**
      * Get a compatibility profile for the parsed package.
      *
      * @return string
@@ -502,6 +562,61 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get a page by its identifier.
+     *
+     * @param string $pageId Page identifier.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getPageById(string $pageId): ?array
+    {
+        foreach ($this->pages as $page) {
+            if (($page['id'] ?? '') === $pageId) {
+                return $page;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get pages as a nested tree while preserving the flat getPages() API.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getPageTree(): array
+    {
+        $pagesById = [];
+        $childrenByParent = [];
+
+        foreach ($this->pages as $page) {
+            $id = (string) ($page['id'] ?? '');
+            if ($id === '') {
+                continue;
+            }
+
+            $pagesById[$id] = $page;
+            $parentId = (string) ($page['parentId'] ?? '');
+            $childrenByParent[$parentId][] = $id;
+        }
+
+        $rootIds = [];
+        foreach ($pagesById as $id => $page) {
+            $parentId = (string) ($page['parentId'] ?? '');
+            if ($parentId === '' || !isset($pagesById[$parentId])) {
+                $rootIds[] = $id;
+            }
+        }
+
+        $tree = [];
+        foreach ($rootIds as $rootId) {
+            $tree[] = $this->buildPageTreeNode($rootId, $pagesById, $childrenByParent, []);
+        }
+
+        return $tree;
+    }
+
+    /**
      * Get only visible pages.
      *
      * @return array<int, array<string, mixed>>
@@ -539,6 +654,24 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get a block by its identifier.
+     *
+     * @param string $blockId Block identifier.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getBlockById(string $blockId): ?array
+    {
+        foreach ($this->getBlocks() as $block) {
+            if (($block['id'] ?? '') === $blockId) {
+                return $block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get all iDevices across all pages.
      *
      * @return array<int, array<string, mixed>>
@@ -561,6 +694,24 @@ class ELPParser implements JsonSerializable
         }
 
         return $idevices;
+    }
+
+    /**
+     * Get an iDevice by its identifier.
+     *
+     * @param string $ideviceId iDevice identifier.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getIdeviceById(string $ideviceId): ?array
+    {
+        foreach ($this->getIdevices() as $idevice) {
+            if (($idevice['id'] ?? '') === $ideviceId) {
+                return $idevice;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -864,6 +1015,40 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Convert all parsed project information to a detailed array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toDetailedArray(): array
+    {
+        return [
+            'summary' => $this->toArray(),
+            'format' => [
+                'family' => $this->getFormatFamily(),
+                'version' => $this->getFormatVersion(),
+                'contentFormat' => $this->contentFormat,
+                'contentFile' => $this->contentFile,
+                'sourceExtension' => $this->sourceExtension,
+                'packageProfile' => $this->getPackageProfile(),
+                'resourceLayout' => $this->resourceLayout,
+                'resourceProfile' => $this->resourceProfile,
+            ],
+            'versionInfo' => $this->versionInfo,
+            'metadata' => $this->getMetadata(),
+            'userPreferences' => $this->userPreferences,
+            'odeResources' => $this->odeResources,
+            'odeProperties' => $this->odeProperties,
+            'pages' => $this->pages,
+            'pageTree' => $this->getPageTree(),
+            'blocks' => $this->getBlocks(),
+            'idevices' => $this->getIdevices(),
+            'assets' => $this->assetsDetailed,
+            'orphanAssets' => $this->getOrphanAssets(),
+            'archiveEntries' => $this->archiveEntries,
+        ];
+    }
+
+    /**
      * Return the JSON-serializable representation.
      *
      * @return mixed
@@ -885,6 +1070,31 @@ class ELPParser implements JsonSerializable
         try {
             $json = json_encode(
                 $this,
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+            );
+        } catch (JsonException $exception) {
+            throw new ElpParserException('Failed to encode JSON: ' . $exception->getMessage(), 0, $exception);
+        }
+
+        if ($destinationPath !== null && file_put_contents($destinationPath, $json) === false) {
+            throw new ElpParserException('Unable to write JSON file.');
+        }
+
+        return $json;
+    }
+
+    /**
+     * Export the detailed parsed representation as JSON.
+     *
+     * @param string|null $destinationPath Optional destination path.
+     *
+     * @return string
+     */
+    public function exportDetailedJson(?string $destinationPath = null): string
+    {
+        try {
+            $json = json_encode(
+                $this->toDetailedArray(),
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
             );
         } catch (JsonException $exception) {
@@ -1009,11 +1219,52 @@ class ELPParser implements JsonSerializable
                         'has_root_dtd' => $this->hasRootDtd,
                         'likely_version_4' => $this->isLikelyVersion4Package(),
                     ],
+                    'user_preferences' => $this->userPreferences,
                     'project_properties' => $this->odeProperties,
                     'project_resources' => $this->odeResources,
                 ],
             ],
         ];
+    }
+
+    /**
+     * Build one page-tree node and guard against malformed cycles.
+     *
+     * @param string                                  $pageId           Page identifier.
+     * @param array<string, array<string, mixed>>     $pagesById        Pages indexed by ID.
+     * @param array<string, array<int, string>>       $childrenByParent Child IDs by parent ID.
+     * @param array<string, bool>                     $ancestors        Current ancestor set.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildPageTreeNode(
+        string $pageId,
+        array $pagesById,
+        array $childrenByParent,
+        array $ancestors
+    ): array {
+        $page = $pagesById[$pageId];
+        $page['children'] = [];
+
+        if (isset($ancestors[$pageId])) {
+            $page['cycleDetected'] = true;
+            return $page;
+        }
+
+        $ancestors[$pageId] = true;
+
+        foreach (($childrenByParent[$pageId] ?? []) as $childId) {
+            if (isset($pagesById[$childId])) {
+                $page['children'][] = $this->buildPageTreeNode(
+                    $childId,
+                    $pagesById,
+                    $childrenByParent,
+                    $ancestors
+                );
+            }
+        }
+
+        return $page;
     }
 
     /**

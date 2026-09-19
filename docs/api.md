@@ -31,6 +31,14 @@ Factory equivalent to the constructor.
 - `isLikelyVersion4Package(): bool`
 - `isLegacyFormat(): bool`
 
+### ODE project data
+
+- `getUserPreferences(): array`
+- `getOdeResources(): array`
+- `getOdeProperties(): array`
+- `getProjectId(): ?string`
+- `getProjectVersionId(): ?string`
+
 ### Core metadata
 
 - `getTitle(): string`
@@ -45,9 +53,13 @@ Factory equivalent to the constructor.
 
 - `getStrings(): array`
 - `getPages(): array`
+- `getPageTree(): array`
+- `getPageById(string $pageId): ?array`
 - `getVisiblePages(): array`
 - `getBlocks(): array`
+- `getBlockById(string $blockId): ?array`
 - `getIdevices(): array`
+- `getIdeviceById(string $ideviceId): ?array`
 - `getPageTexts(): array`
 - `getVisiblePageTexts(): array`
 - `getPageTextById(string $pageId): ?array`
@@ -70,8 +82,10 @@ Asset references are returned only when they resolve to an entry in the project 
 ### Serialization and extraction
 
 - `toArray(): array`
+- `toDetailedArray(): array`
 - `jsonSerialize(): mixed`
 - `exportJson(?string $destinationPath = null): string`
+- `exportDetailedJson(?string $destinationPath = null): string`
 - `extract(string $destinationPath): void`
 
 ## `Exelearning\Archive\ArchiveLimits`
