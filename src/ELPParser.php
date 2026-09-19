@@ -50,6 +50,8 @@ use JsonSerializable;
  */
 class ELPParser implements JsonSerializable
 {
+    public const DETAILED_SCHEMA_VERSION = '1.0';
+
     protected string $filePath;
     protected int $version = 2;
     protected string $sourceExtension = '';
@@ -1599,6 +1601,47 @@ class ELPParser implements JsonSerializable
     }
 
     /**
+     * Get the version of the detailed JSON contract.
+     *
+     * @return string
+     */
+    public static function getDetailedSchemaVersion(): string
+    {
+        return self::DETAILED_SCHEMA_VERSION;
+    }
+
+    /**
+     * Get the bundled detailed JSON Schema path.
+     *
+     * @return string
+     */
+    public static function getDetailedJsonSchemaPath(): string
+    {
+        return dirname(__DIR__)
+            . '/schema/elp-parser-'
+            . self::DETAILED_SCHEMA_VERSION
+            . '.schema.json';
+    }
+
+    /**
+     * Read the bundled detailed JSON Schema.
+     *
+     * @return string
+     */
+    public static function getDetailedJsonSchema(): string
+    {
+        $schema = file_get_contents(self::getDetailedJsonSchemaPath());
+
+        if ($schema === false) {
+            throw new ElpParserException(
+                'Unable to read the bundled detailed JSON Schema.'
+            );
+        }
+
+        return $schema;
+    }
+
+    /**
      * Convert all parsed project information to a detailed array.
      *
      * @return array<string, mixed>
@@ -1616,6 +1659,7 @@ class ELPParser implements JsonSerializable
     public function toDetailedArray(): array
     {
         return [
+            'schemaVersion' => self::DETAILED_SCHEMA_VERSION,
             'summary' => $this->toArray(),
             'format' => [
                 'family' => $this->getFormatFamily(),
