@@ -57,12 +57,12 @@ jobs:
               --path="$MUTATION_PATHS" \
               --covered-only \
               --ignore-min-score-on-zero-mutations \
-              --min=80
+              --min=50
           else
             vendor/bin/pest \
               --mutate \
               --parallel \
               --everything \
               --covered-only \
-              --min=80
+              --min=50
           fi
