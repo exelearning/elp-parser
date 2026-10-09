@@ -31,7 +31,7 @@ jobs:
         run: composer archive --format=zip --file=elp-parser-test
 
       - name: Generate test CycloneDX SBOM
-        uses: anchore/sbom-action@v0.24.2
+        uses: anchore/sbom-action@v0.24.3
         with:
           path: .
           format: cyclonedx-json
